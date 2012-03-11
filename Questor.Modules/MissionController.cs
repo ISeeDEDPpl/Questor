@@ -267,6 +267,8 @@ namespace Questor.Modules
                         ReloadAll();
                         _lastReload = DateTime.Now;
                     }
+                    else
+                        Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
                     Logging.Log("MissionController: closest.Activate: [" + closest.Name + "] Move to next pocket after reload command and change state to 'NextPocket'");
                     closest.Activate();
 
@@ -341,6 +343,8 @@ namespace Questor.Modules
                         ReloadAll();
                         _lastReload = DateTime.Now;
 					}
+                    else
+                        Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
 
                     if (Cache.Instance.DirectEve.ActiveShip.MaxLockedTargets > 0)
                     {
@@ -364,6 +368,8 @@ namespace Questor.Modules
                         ReloadAll();
                         _lastReload = DateTime.Now;
                     }
+                    else
+                        Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
                 }
 
                 // Are we approaching the active (out of range) target?
@@ -1297,6 +1303,8 @@ namespace Questor.Modules
                         ReloadAll();
                         _lastReload = DateTime.Now;
                     }
+                    else
+                        Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
 
                     State = MissionControllerState.Done;
                     break;
