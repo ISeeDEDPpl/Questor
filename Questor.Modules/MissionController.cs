@@ -261,14 +261,13 @@ namespace Questor.Modules
                         BookmarkPocketForSalvaging();
 
                     // Reload weapons and activate gate to move to the next pocket
-                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 20)
+                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 10)
                     {
                         Logging.Log("MissionController: ReloadALL: Reload before moving to next pocket");
                         ReloadAll();
                         _lastReload = DateTime.Now;
                     }
-                    else
-                        Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
+
                     Logging.Log("MissionController: closest.Activate: [" + closest.Name + "] Move to next pocket after reload command and change state to 'NextPocket'");
                     closest.Activate();
 
@@ -337,14 +336,12 @@ namespace Questor.Modules
                 // Lock priority target if within weapons range
                 if (target.Distance < range)
                 {
-                    if (target_null && targetedby == 0 && DateTime.Now.Subtract(_lastReload).TotalSeconds > 20)
+                    if (target_null && targetedby == 0 && DateTime.Now.Subtract(_lastReload).TotalSeconds > 10)
                     {
                         Logging.Log("MissionController: ReloadALL: Reload if [" + target_null + "] && [" + targetedby + "] == 0 AND [" + target.Distance + "] < [" + range + "]");
                         ReloadAll();
                         _lastReload = DateTime.Now;
 					}
-                    else
-                        Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
 
                     if (Cache.Instance.DirectEve.ActiveShip.MaxLockedTargets > 0)
                     {
@@ -362,14 +359,13 @@ namespace Questor.Modules
                 }
                 else
                 {
-                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 20)
+                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 10)
                     {
                         Logging.Log("MissionController: ReloadAll: Reload weapons");
                         ReloadAll();
                         _lastReload = DateTime.Now;
                     }
-                    else
-                        Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
+
                 }
 
                 // Are we approaching the active (out of range) target?
@@ -1297,14 +1293,12 @@ namespace Questor.Modules
                         BookmarkPocketForSalvaging();
 
                     // Reload weapons
-                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 20)
+                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 10)
                     {
                         Logging.Log("MissionController: ReloadAll: Reload becasue ActionState is Done - Reloading Weapons.");
                         ReloadAll();
                         _lastReload = DateTime.Now;
                     }
-                    else
-                        Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
 
                     State = MissionControllerState.Done;
                     break;
