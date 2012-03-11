@@ -25,7 +25,6 @@ namespace Questor.Modules
         private bool _isJammed;
         public CombatState State { get; set; }
         private DateTime _lastOrbit  { get; set; }
-        private DateTime _lastReload { get; set; }
         private DateTime _lastLoggingAction { get; set; }
 
         private int MaxCharges { get; set; }
@@ -99,13 +98,8 @@ namespace Questor.Modules
                     Cache.Instance.TimeSpentReloading_seconds = Cache.Instance.TimeSpentReloading_seconds + (int)Time.ReloadWeaponDelayBeforeUsable_seconds;
                     _lastLoggingAction = DateTime.Now;
                 }
-                if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 20)
-                {
-                    Logging.Log("Combat: Reloading [" + weapon.ItemId + "] with [" + charge.TypeName + "][" + charge.TypeId + "]");
-                    weapon.ReloadAmmo(charge);
-                }
-                else
-                    Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
+                Logging.Log("Combat: Reloading [" + weapon.ItemId + "] with [" + charge.TypeName + "][" + charge.TypeId + "]");
+                weapon.ReloadAmmo(charge);
             }
             else
             {
@@ -228,13 +222,11 @@ namespace Questor.Modules
                     return;
                 _lastWeaponReload[weapon.ItemId] = DateTime.Now;
 
-                if (weapon.Charge.TypeId == charge.TypeId && DateTime.Now.Subtract(_lastReload).TotalSeconds > 20)
+                if (weapon.Charge.TypeId == charge.TypeId)
                 {
                     Logging.Log("Combat: ReloadingAll [" + weapon.ItemId + "] with [" + charge.TypeName + "][" + charge.TypeId + "]");
                     weapon.ReloadAmmo(charge);
                 }
-                else
-                    Logging.Log("MissionController: ReloadAll: Attempt to ReloadAll Failed: TimeOut in [" + (20 - DateTime.Now.Subtract(_lastReload).TotalSeconds) + "] ");
 
             }
             return;
