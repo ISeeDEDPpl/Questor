@@ -1,5 +1,6 @@
 @Echo off
-set innerspacedotnetdirectory="..\..\innerspace\.net programs\"
+set innerspacedotnetdirectory="%ProgramFiles%\InnerSpace\.NET Programs\"
+if not "%ProgramFiles(x86)%" == "" set innerspacedotnetdirectory="%ProgramFiles(x86)%\InnerSpace\.NET Programs\"
 
 copy /y .\output\*.exe %innerspacedotnetdirectory% 
 copy /y .\output\*.dll %innerspacedotnetdirectory% 
