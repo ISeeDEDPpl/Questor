@@ -20,9 +20,7 @@ namespace Questor.Modules
     {
         private DateTime? _clearPocketTimeout;
         private int _currentAction;
-        private DateTime _lastActivateAction;
-        private DateTime _lastApproachAction;
-        private DateTime _lastBookmarkPocketAttempt;
+
         private readonly Dictionary<long, DateTime> _lastWeaponReload = new Dictionary<long, DateTime>();
         private double _lastX;
         private double _lastY;
@@ -31,9 +29,8 @@ namespace Questor.Modules
         private List<Action> _pocketActions;
         private bool _waiting;
         private DateTime _waitingSince;
-        private DateTime _lastAlign;
-        private DateTime _lastOrbit;
-        private DateTime _lastReload;
+        private DateTime _moveToNextPocket = DateTime.MaxValue;
+
 
         private bool target_null = false;
         public long AgentId { get; set; }
@@ -58,12 +55,14 @@ namespace Questor.Modules
             // We arent suppose to create bookmarks
             //if (!Settings.Instance.LogBounties)
             //    return;
-            var mission = Cache.Instance.GetAgentMission(AgentId);
-            var currentPocketName = Cache.Instance.FilterPath(mission.Name);
+            Cache.Instance.mission = Cache.Instance.GetAgentMission(AgentId);
+            var currentPocketName = Cache.Instance.FilterPath(Cache.Instance.mission.Name);
             if (Settings.Instance.PocketStatistics)
             {
-                Settings.Instance.PocketStatisticsFile = Path.Combine(Settings.Instance.PocketStatisticsPath, Cache.Instance.FilterPath(Cache.Instance.DirectEve.Me.Name) + " - " + currentPocketName + " - " + _pocket + " - PocketStatistics.csv");
-
+                if (Settings.Instance.PocketStatsUseIndividualFilesPerPocket)
+                {
+                        Settings.Instance.PocketStatisticsFile = Path.Combine(Settings.Instance.PocketStatisticsPath, Cache.Instance.FilterPath(Cache.Instance.DirectEve.Me.Name) + " - " + currentPocketName + " - " + _pocket + " - PocketStatistics.csv");
+                }
                 if (!Directory.Exists(Settings.Instance.PocketStatisticsPath)) 
                     Directory.CreateDirectory(Settings.Instance.PocketStatisticsPath);
 
@@ -77,7 +76,8 @@ namespace Questor.Modules
 
                 // Build the line
                 var pocketstats_line = DateTime.Now + ";";                                                 //Date
-                pocketstats_line += currentPocketName + ";" + "pocket" + (_pocket) + ";";                  //Mission Name and Pocket
+                pocketstats_line += currentPocketName + ";";                                               //Mission Name
+                pocketstats_line += "pocket" + (_pocket) + ";";                                            //Pocket number
                 pocketstats_line += ((int)DateTime.Now.Subtract(StartedPocket).TotalMinutes) + ";";        //Time to Complete
                 pocketstats_line += ((long)(Cache.Instance.DirectEve.Me.Wealth - Wealth)) + ";";           //Isk
                 pocketstats_line += ((int)Cache.Instance.panic_attempts_this_pocket) + ";";                //Panics
@@ -134,11 +134,12 @@ namespace Questor.Modules
 
                 if (_lastWeaponReload.ContainsKey(weapon.ItemId) && DateTime.Now < _lastWeaponReload[weapon.ItemId].AddSeconds((int)Time.ReloadWeaponDelayBeforeUsable_seconds))
                     return;
+
                 _lastWeaponReload[weapon.ItemId] = DateTime.Now;
 
                 if (weapon.Charge.TypeId == charge.TypeId)
                 {
-                    Logging.Log("MissionController: ReloadingAll [" + weapon.ItemId + "] with [" + charge.TypeName + "][" + charge.TypeId + "]");
+                    Logging.Log("MissionController: ReloadingAll [" + weapon.ItemId + "] with [" + charge.TypeName + "][ typeID:" + charge.TypeId + "]");
 
                     weapon.ReloadAmmo(charge);
                 }
@@ -156,17 +157,17 @@ namespace Questor.Modules
                 // This scenario only happens when all wrecks are within tractor range and you have a salvager 
                 // (typically only with a Golem).  Check to see if there are any cargo containers in space.  Cap 
                 // boosters may cause an unneeded salvage trip but that is better than leaving millions in loot behind.  
-                if (DateTime.Now.Subtract(_lastBookmarkPocketAttempt).TotalSeconds > (int)Time.BookmarkPocketRetryDelay_seconds)
+                if (DateTime.Now > Cache.Instance._nextBookmarkPocketAttempt)
                 {
                     if (!Settings.Instance.LootEverything && Cache.Instance.Containers.Count() < Settings.Instance.MinimumWreckCount)
                     {
                         Logging.Log("MissionController: No bookmark created because the pocket has [" + Cache.Instance.Containers.Count() + "] wrecks/containers and the minimum is [" + Settings.Instance.MinimumWreckCount + "]");
-                        _lastBookmarkPocketAttempt = DateTime.Now;
+                        Cache.Instance._nextBookmarkPocketAttempt = DateTime.Now.AddSeconds((int)Time.BookmarkPocketRetryDelay_seconds);
                     }
                     else if (Settings.Instance.LootEverything)
                     {
                         Logging.Log("MissionController: No bookmark created because the pocket has [" + Cache.Instance.UnlootedContainers.Count() + "] wrecks/containers and the minimum is [" + Settings.Instance.MinimumWreckCount + "]");
-                        _lastBookmarkPocketAttempt = DateTime.Now;
+                        Cache.Instance._nextBookmarkPocketAttempt = DateTime.Now.AddSeconds((int)Time.BookmarkPocketRetryDelay_seconds);
                     }
                 }
 
@@ -196,7 +197,7 @@ namespace Questor.Modules
         {
             var target = action.GetParameterValue("target");
 
-            // No parameter? Although we shouldnt really allow it, assume its the acceleration gate :)
+            // No parameter? Although we shouldn't really allow it, assume its the acceleration gate :)
             if (string.IsNullOrEmpty(target))
                 target = "Acceleration Gate";
 
@@ -233,16 +234,16 @@ namespace Questor.Modules
 
                 //
                 // this is a bad idea for a speed tank, we ought to somehow cache the object they are orbiting/approaching, etc
-                // this seemingly slowed down the exit from cetain missions for me for 2-3min as it had a command to orbit some random object
+                // this seemingly slowed down the exit from certain missions for me for 2-3min as it had a command to orbit some random object
                 // after the "done" command
                 //
                 if (closest.Distance < -10100)
                 {
-                    if (DateTime.Now.Subtract(_lastOrbit).TotalSeconds > 15)
+                    if (DateTime.Now > Cache.Instance._nextOrbit)
                     {
                         closest.Orbit(1000);
                         Logging.Log("MissionController: Activate: We are too close to [" + closest.Name + "] Initiating orbit");
-                        _lastOrbit = DateTime.Now;
+                        Cache.Instance._nextOrbit = DateTime.Now.AddSeconds(15);
                     }
                 }
                 //Logging.Log("MissionController: distance " + closest.Distance);
@@ -261,21 +262,22 @@ namespace Questor.Modules
                         BookmarkPocketForSalvaging();
 
                     // Reload weapons and activate gate to move to the next pocket
-                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 10)
+                    if (DateTime.Now > Cache.Instance._nextReload)
                     {
                         Logging.Log("MissionController: ReloadALL: Reload before moving to next pocket");
                         ReloadAll();
-                        _lastReload = DateTime.Now;
+                        Cache.Instance._nextReload = DateTime.Now.AddSeconds((int)Time.ReloadWeaponDelayBeforeUsable_seconds);
                     }
+                    if (DateTime.Now > Cache.Instance._nextActivateAction)
+                    {
+                        Logging.Log("MissionController: closest.Activate: [" + closest.Name + "] Move to next pocket after reload command and change state to 'NextPocket'");
+                        closest.Activate();
 
-                    Logging.Log("MissionController: closest.Activate: [" + closest.Name + "] Move to next pocket after reload command and change state to 'NextPocket'");
-                    closest.Activate();
-
-                    // Do not change actions, if NextPocket gets a timeout (>2 mins) then it reverts to the last action
-                    
-
-                    _lastActivateAction = DateTime.Now;
-                    State = MissionControllerState.NextPocket;
+                        // Do not change actions, if NextPocket gets a timeout (>2 mins) then it reverts to the last action
+                        Cache.Instance._nextActivateAction = DateTime.Now.AddSeconds(15);
+                        _moveToNextPocket = DateTime.Now;
+                        State = MissionControllerState.NextPocket;
+                    }
                 }
             }
             else if (closest.Distance < (int)Distance.WarptoDistance) //else if (closest.Distance < (int)Distance.WarptoDistance) //if we are inside warpto distance then approach
@@ -283,27 +285,27 @@ namespace Questor.Modules
                 // Move to the target
                 if (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != closest.Id)
                 {
-                    if (DateTime.Now.Subtract(_lastApproachAction).TotalSeconds > 2)
+                    if (DateTime.Now > Cache.Instance._nextApproachAction)
                     {
-                    Logging.Log("MissionController.Activate: Approaching target [" + closest.Name + "][" + closest.Id + "]");
-                        _lastApproachAction = DateTime.Now;
-                    closest.Approach();
+                        Logging.Log("MissionController.Activate: Approaching target [" + closest.Name + "][ID: " + closest.Id + "][" + Math.Round(closest.Distance / 1000, 0) + "k away]");
+                        closest.Approach();
+                        Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
                     }
-                    
+
                 }
             }
-            else //we must be outside warpto distance, but we are likley in a deadspace so align to the target
+            else //we must be outside warpto distance, but we are likely in a deadspace so align to the target
             {
                 // We cant warp if we have drones out
                 if (Cache.Instance.ActiveDrones.Count() > 0)
                     return;
-                    
-                if (DateTime.Now.Subtract(_lastAlign ).TotalMinutes > (int)Time.LastAlignDelay_minutes)
+
+                if (DateTime.Now > Cache.Instance._nextAlign)
                 {
                     // Only happens if we are asked to Activate something that is outside Distance.CloseToGateActivationRange (default is: 6k)
                     Logging.Log("MissionController: closest.AlignTo: [" + closest.Name + "] This only happens if we are asked to Activate something that is outside [" + Distance.CloseToGateActivationRange + "]");
                     closest.AlignTo();
-                    _lastAlign = DateTime.Now;
+                    Cache.Instance._nextAlign = DateTime.Now.AddMinutes((int)Time.AlignDelay_minutes);
                 }
             }
         }
@@ -315,6 +317,15 @@ namespace Questor.Modules
             
             // Get lowest range
             var range = Math.Min(Cache.Instance.WeaponRange, Cache.Instance.DirectEve.ActiveShip.MaxTargetRange);
+            
+            int distancetoclear;
+            if (!int.TryParse(action.GetParameterValue("distance"), out distancetoclear))
+                distancetoclear = (int)range;
+            
+            if (distancetoclear != 0 && distancetoclear != -2147483648 && distancetoclear != 2147483647)
+            {
+                range = Math.Min(range, distancetoclear);
+            }
 
             // Is there a priority target out of range?
             var target = Cache.Instance.PriorityTargets.OrderBy(t => t.Distance).Where(t => !(Cache.Instance.IgnoreTargets.Contains(t.Name.Trim()) && !Cache.Instance.TargetedBy.Any(w => w.IsWarpScramblingMe || w.IsNeutralizingMe || w.IsWebbingMe))).FirstOrDefault();
@@ -336,22 +347,22 @@ namespace Questor.Modules
                 // Lock priority target if within weapons range
                 if (target.Distance < range)
                 {
-                    if (target_null && targetedby == 0 && DateTime.Now.Subtract(_lastReload).TotalSeconds > 10)
+                    if (target_null && targetedby == 0 && DateTime.Now > Cache.Instance._nextReload)
                     {
-                        Logging.Log("MissionController: ReloadALL: Reload if [" + target_null + "] && [" + targetedby + "] == 0 AND [" + target.Distance + "] < [" + range + "]");
+                        Logging.Log("MissionController: ReloadALL: Reload if [" + target_null + "] && [" + targetedby + "] == 0 AND [" + Math.Round(target.Distance,0) + "] < [" + range + "]");
                         ReloadAll();
-                        _lastReload = DateTime.Now;
-					}
+                        Cache.Instance._nextReload = DateTime.Now.AddSeconds(20);
+                    }
 
                     if (Cache.Instance.DirectEve.ActiveShip.MaxLockedTargets > 0)
-                    {
-                        if (target.IsTarget) //This target is already targeted no need to target it again
+                    { 
+                        if (target.IsTarget || target.IsTargeting) //This target is already targeted no need to target it again
                         {
                             return;
                         }
                         else
                         {
-                            Logging.Log("MissionController.ClearPocket: Targeting [" + target.Name + "][" + target.Id + "] - Distance [" + target.Distance + "]");
+                            Logging.Log("MissionController.ClearPocket: Targeting [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance / 1000, 0) + "k away]");
                             target.LockTarget();
                         }
                     }
@@ -359,13 +370,12 @@ namespace Questor.Modules
                 }
                 else
                 {
-                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 10)
+                    if (DateTime.Now > Cache.Instance._nextReload)
                     {
                         Logging.Log("MissionController: ReloadAll: Reload weapons");
                         ReloadAll();
-                        _lastReload = DateTime.Now;
+                        Cache.Instance._nextReload = DateTime.Now.AddSeconds((int)Time.ReloadWeaponDelayBeforeUsable_seconds);
                     }
-
                 }
 
                 // Are we approaching the active (out of range) target?
@@ -373,37 +383,45 @@ namespace Questor.Modules
 
                 if (Settings.Instance.SpeedTank && (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != target.Id))
                 {
-                    if ((DateTime.Now.Subtract(_lastOrbit).TotalSeconds > 15))
+                    if (DateTime.Now > Cache.Instance._nextOrbit)
                     {
                         target.Orbit(Cache.Instance.OrbitDistance);
-                        Logging.Log("MissionController.ClearPocket: Initiating Orbit [" + target.Name + "][" + target.Id + "]");
-                        _lastOrbit = DateTime.Now;
+                        Logging.Log("MissionController.ClearPocket: Initiating [" + Cache.Instance.OrbitDistance + "] meter Orbit of [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance / 1000, 0) + "k away]");
+                        Cache.Instance._nextOrbit = DateTime.Now.AddSeconds((int)Time.OrbitDelay_seconds); 
                     }
                 }
 
-                if (!Settings.Instance.SpeedTank) //we need to make sure that orbitrange is set to the range of the ship if it isnt specified in the character XML!!!!
+                if (!Settings.Instance.SpeedTank) //we need to make sure that orbitrange is set to the range of the ship if it isn't specified in the character XML!!!!
                 {
-                    if (Settings.Instance.OptimalRange >= 0)
+                    if (Settings.Instance.OptimalRange != 0)
                     {
                         if (target.Distance > Settings.Instance.OptimalRange + (int)Distance.OptimalRangeCushion && (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != target.Id))
                         {
-                            target.Approach(Settings.Instance.OptimalRange);
-                            Logging.Log("MissionController.ClearPocket: Using Optimal Range: Approaching target [" + target.Name + "][" + target.Id + "]");
+                            if (DateTime.Now > Cache.Instance._nextApproachAction)
+                            {
+                                target.Approach(Settings.Instance.OptimalRange);
+                                Logging.Log("MissionController.ClearPocket: Using Optimal Range: Approaching target [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance / 1000, 0) + "k away]");
+                                Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                            }
                         }
 
                         if (target.Distance <= Settings.Instance.OptimalRange && Cache.Instance.Approaching != null)
                         {
                             Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.CmdStopShip);
                             Cache.Instance.Approaching = null;
-                            Logging.Log("MissionController.ClearPocket: Using Optimal Range: Stop ship, target is in orbit range");
+                            Logging.Log("MissionController.ClearPocket: Using Optimal Range: Stop ship, target at [" + Math.Round(target.Distance / 1000, 0) + "k away] is inside optimal");
                         }
                     }
                     else
                     {
                         if (target.Distance > range && (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != target.Id))
                         {
-                            target.Approach((int)(Cache.Instance.WeaponRange * 0.8d));
-                            Logging.Log("MissionController.ClearPocket: Using Weapons Range: Approaching target [" + target.Name + "][" + target.Id + "]");
+                            if (DateTime.Now > Cache.Instance._nextApproachAction)
+                            {
+                                target.Approach((int)(Cache.Instance.WeaponRange * 0.8d));
+                                Logging.Log("MissionController.ClearPocket: Using Weapons Range: Approaching target [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance / 1000, 0) + "k away]");
+                                Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                            }
                         }
 
                         if (target.Distance <= range && Cache.Instance.Approaching != null)
@@ -446,27 +464,29 @@ namespace Questor.Modules
             target = target ?? Cache.Instance.Entities.Where(t => t.Distance < distancetoconsidertargets && !t.IsSentry && !t.IsContainer && t.IsNpc && t.CategoryId == (int)CategoryID.Entity && t.GroupId != (int)Group.LargeCollidableStructure && !Cache.Instance.IgnoreTargets.Contains(t.Name.Trim())).OrderBy(t => t.Distance).FirstOrDefault();
             int targetedby = Cache.Instance.TargetedBy.Where(t => t.Distance < distancetoconsidertargets && !t.IsSentry && !t.IsContainer && t.IsNpc && t.CategoryId == (int)CategoryID.Entity && t.GroupId != (int)Group.LargeCollidableStructure && !Cache.Instance.IgnoreTargets.Contains(t.Name.Trim())).Count();
 
-            // Reset timeout
-            _clearPocketTimeout = null;
-
-            // Lock priority target if within weapons range
-            if (target.Distance < range)
+            if (target != null)
             {
-                if (Cache.Instance.DirectEve.ActiveShip.MaxLockedTargets > 0)
+                // Reset timeout
+                _clearPocketTimeout = null;
+
+                // Lock priority target if within weapons range
+                if (target.Distance < range)
                 {
-                        if (target.IsTarget) //This target is already targeted no need to target it again
+                    if (Cache.Instance.DirectEve.ActiveShip.MaxLockedTargets > 0)
+                    {
+                        if (target.IsTarget || target.IsTargeting) //This target is already targeted no need to target it again
                         {
                             return;
                         }
                         else
                         {
-                            Logging.Log("MissionController.ClearwithinWeaponsRange: Targeting [" + target.Name + "][" + target.Id + "] - Distance [" + target.Distance + "]");
+                            Logging.Log("MissionController.ClearwithinWeaponsRange: Targeting [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance / 1000, 0) + "k away]");
                             target.LockTarget();
                         }
+                    }
+                    return;
                 }
-                return;
             }
-            
 
             // Do we have a timeout?  No, set it to now + 5 seconds
             if (!_clearPocketTimeout.HasValue)
@@ -488,13 +508,13 @@ namespace Questor.Modules
             if (Cache.Instance.NormalApproch)
                 Cache.Instance.NormalApproch = false;
 
-            //int distancetoapp;
-            //if (!int.TryParse(action.GetParameterValue("distance"), out distancetoapp))
-            //    distancetoapp = (int)Distance.GateActivationRange;
+            int distancetoapp;
+            if (!int.TryParse(action.GetParameterValue("distance"), out distancetoapp))
+                distancetoapp = (int)Distance.GateActivationRange;
 
             var target = action.GetParameterValue("target");
 
-            // No parameter? Although we shouldnt really allow it, assume its the acceleration gate :)
+            // No parameter? Although we shouldn't really allow it, assume its the acceleration gate :)
             if (string.IsNullOrEmpty(target))
                 target = "Acceleration Gate";
 
@@ -508,8 +528,8 @@ namespace Questor.Modules
 
             var closest = targets.OrderBy(t => t.Distance).First();
             // Move to the target
-            Logging.Log("MissionController.MoveToBackground: Approaching target [" + closest.Name + "][" + closest.Id + "]");
-            closest.Approach();
+            Logging.Log("MissionController.MoveToBackground: Approaching target [" + closest.Name + "][ID: " + closest.Id + "][" + Math.Round(closest.Distance / 1000, 0) + "k away]");
+            closest.Approach(distancetoapp);
            _currentAction++;
         }
 
@@ -520,7 +540,7 @@ namespace Questor.Modules
 
             var target = action.GetParameterValue("target");
 
-            // No parameter? Although we shouldnt really allow it, assume its the acceleration gate :)
+            // No parameter? Although we shouldn't really allow it, assume its the acceleration gate :)
             if (string.IsNullOrEmpty(target))
                 target = "Acceleration Gate";
 
@@ -537,6 +557,13 @@ namespace Questor.Modules
             }
 
             var closest = targets.OrderBy(t => t.Distance).First();
+            if (closest.Distance < 2489)
+            {
+                Logging.Log("MissionController.MoveTo We are [" + closest.Distance + "] from a [" + closest.Name + "] we dont need to go any further");
+                _currentAction++;
+                return;
+            }
+
             if (closest.Distance < distancetoapp)
             {
                 // We are close enough to whatever we needed to move to
@@ -544,10 +571,9 @@ namespace Questor.Modules
 
                 if (Cache.Instance.Approaching != null)
                 {
-                    
                     Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.CmdStopShip);
                     Cache.Instance.Approaching = null;
-                    Logging.Log("MissionController.MoveTo: Stop ship, we are [" + distancetoapp + "] from [" + closest.Name + "]");
+                    Logging.Log("MissionController.MoveTo: Stop ship, we are [" + distancetoapp + "] from [ID: " + closest.Name + "][" + Math.Round(closest.Distance / 1000, 0) + "k away]");
                 }
                 //if (Settings.Instance.SpeedTank)
                 //{
@@ -558,31 +584,34 @@ namespace Questor.Modules
             }
             else if (closest.Distance < (int)Distance.WarptoDistance)
             {
-                    // Move to the target
-                    if (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != closest.Id)
+                // Move to the target
+                if (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != closest.Id)
+                {
+                    if (DateTime.Now > Cache.Instance._nextApproachAction)
                     {
-                        Logging.Log("MissionController.Activate: Approaching target [" + closest.Name + "][" + closest.Id + "]");
+                        Logging.Log("MissionController.Activate: Approaching target [" + closest.Name + "][ID: " + closest.Id + "][" + Math.Round(closest.Distance / 1000, 0) + "k away]");
                         closest.Approach();
-                        //_lastApproach = DateTime.Now;
+                        Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
                     }
+                }
             }
             else
             {
                 //// Move to the target
                 //if (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != closest.Id)
                 //{
-                //    Logging.Log("MissionController.MoveTo: Approaching target [" + closest.Name + "][" + closest.Id + "]");
+                //    Logging.Log("MissionController.MoveTo: Approaching target [" + closest.Name + "][" + closest.Id + "][" + Math.Round(closest.Distance/1000,0) + "k away]");
                 //    closest.Approach();
                 //}
                 // We cant warp if we have drones out
                 if (Cache.Instance.ActiveDrones.Count() > 0)
                     return;
 
-                if (DateTime.Now.Subtract(_lastAlign ).TotalMinutes > (int)Time.LastAlignDelay_minutes)
+                if (DateTime.Now > Cache.Instance._nextAlign)
                 {
-                // Probably never happens
-                closest.AlignTo();
-                _lastAlign = DateTime.Now;
+                    // Probably never happens
+                    closest.AlignTo();
+                    Cache.Instance._nextAlign = DateTime.Now.AddMinutes((int)Time.AlignDelay_minutes);
                 }
             }
         }
@@ -672,7 +701,7 @@ namespace Questor.Modules
 
                 foreach (var target in Cache.Instance.Targets.Where(e => targets.Any(t => t.Id == e.Id)))
                 {
-                    Logging.Log("MissionController.AggroOnly: Unlocking [" + target.Name + "][" + target.Id + "] Distance [" + target.Distance + "] due to aggro being obtained");
+                    Logging.Log("MissionController.AggroOnly: Unlocking [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance/1000,0) + "k away] due to aggro being obtained");
                     target.UnlockTarget();
 
                 }
@@ -696,7 +725,7 @@ namespace Questor.Modules
            
             if (!Cache.Instance.PriorityTargets.Any(pt => pt.Id == closest.Id))
             {
-                Logging.Log("MissionController.AggroOnly: Adding [" + closest.Name + "][" + closest.Id + "] as a priority target");
+                Logging.Log("MissionController.AggroOnly: Adding [" + closest.Name + "][ID: " + closest.Id + "][" + Math.Round(closest.Distance/1000,0) + "k away] as a priority target");
                 Cache.Instance.AddPriorityTargets(new[] { closest }, Priority.PriorityKillTarget);
             }
         }
@@ -748,11 +777,11 @@ namespace Questor.Modules
             {
                 // We are being attacked, break the kill order
                 if (Cache.Instance.RemovePriorityTargets(targets))
-                    Logging.Log("MissionController.Kill: Breaking off kill order, new spawn has arived!");
+                    Logging.Log("MissionController.Kill: Breaking off kill order, new spawn has arrived!");
 
                 foreach (var target in Cache.Instance.Targets.Where(e => targets.Any(t => t.Id == e.Id)))
                 {
-                    Logging.Log("MissionController.Kill: Unlocking [" + target.Name + "][" + target.Id + "] Distance [" + target.Distance + "] due to kill order being put on hold");
+                    Logging.Log("MissionController.Kill: Unlocking [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance/1000,0) + "k away] due to kill order being put on hold");
                     target.UnlockTarget();
                 }
 
@@ -776,15 +805,19 @@ namespace Questor.Modules
             {
                 if (!Cache.Instance.PriorityTargets.Any(pt => pt.Id == closest.Id))
                 {
-                    Logging.Log("MissionController.Kill: Adding [" + closest.Name + "][" + closest.Id + "] as a priority target");
+                    Logging.Log("MissionController.Kill: Adding [" + closest.Name + "][ID: " + closest.Id + "] as a priority target");
                     Cache.Instance.AddPriorityTargets(new[] {closest}, Priority.PriorityKillTarget);
                 }
                 
                 if (Cache.Instance.Approaching != null && !Settings.Instance.SpeedTank && (Settings.Instance.OptimalRange <= 0))
                 {
-                    Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.CmdStopShip);
-                    Cache.Instance.Approaching = null;
-                    Logging.Log("MissionController.Kill: Stop ship, target is in weapons range");
+                    if (DateTime.Now > Cache.Instance._nextApproachAction)
+                    {
+                        Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.CmdStopShip);
+                        Cache.Instance.Approaching = null;
+                        Logging.Log("MissionController.Kill: Stop ship, target is in weapons range");
+                        Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                    }
                 }
             }
 
@@ -796,7 +829,7 @@ namespace Questor.Modules
                 Logging.Log("MissionController.Kill: Stop ship, target is in optimalRange");
             }
 
-            //if distance to target is more than weapons range and we havent setup optimalrange OR we are inside optimalrange and optimalrange has been setup
+            //if distance to target is more than weapons range and we haven't setup optimalrange OR we are inside optimalrange and optimalrange has been setup
             if ((closest.Distance > range && Settings.Instance.OptimalRange <= 0) || (closest.Distance > Settings.Instance.OptimalRange + (int)Distance.OptimalRangeCushion) && Settings.Instance.OptimalRange > 0)
             {
 
@@ -807,28 +840,36 @@ namespace Questor.Modules
                     //Logging.Log("MissionController: kill: if (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != closest.Id)");
                     if (Settings.Instance.SpeedTank)
                     {
-                        if ((DateTime.Now.Subtract(_lastOrbit).TotalSeconds > 15))
+                        if (DateTime.Now > Cache.Instance._nextOrbit)
                         {
                             closest.Orbit(Cache.Instance.OrbitDistance);
-                            Logging.Log("MissionController.Kill: Initiating Orbit [" + closest.Name + "][" + closest.Id + "]");
-                            _lastOrbit = DateTime.Now;
+                            Logging.Log("MissionController.Kill: Initiating Orbit [" + closest.Name + "][ID: " + closest.Id + "] at [" + Cache.Instance.OrbitDistance + "] meters, the orbit target is: [" + Math.Round(closest.Distance, 0) + "] meters away");
+                            Cache.Instance._nextOrbit = DateTime.Now.AddSeconds((int)Time.OrbitDelay_seconds);
                         }
 
                     }
                     else if (Settings.Instance.OptimalRange > 0)
                     {
-                        closest.Approach((int)(Settings.Instance.OptimalRange * 0.8d)); // Move within 80% of optimalrange
-                        Logging.Log("MissionController: Kill: initiating Approach of [" + closest.Name + "] distance: [" + closest.Distance + "] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                        if (DateTime.Now > Cache.Instance._nextApproachAction)
+                        {
+                            closest.Approach((int)(Settings.Instance.OptimalRange * 0.8d)); // Move within 80% of optimalrange
+                            Logging.Log("MissionController: Kill: initiating Approach of [" + closest.Name + "][" + Math.Round(closest.Distance / 1000, 0) + "k away] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                            Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                        }
                     }
                     else
                     {
-                        closest.Approach((int)(Cache.Instance.WeaponRange * 0.8d)); // Move within 80% of range
-                        Logging.Log("MissionController: Kill: initiating Approach of [" + closest.Name + "] distance: [" + closest.Distance + "] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                        if (DateTime.Now > Cache.Instance._nextApproachAction)
+                        {
+                            closest.Approach((int)(Cache.Instance.WeaponRange * 0.8d)); // Move within 80% of range
+                            Logging.Log("MissionController: Kill: initiating Approach of [" + closest.Name + "][" + Math.Round(closest.Distance / 1000, 0) + "k away] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                            Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                        }
                     }
                 }
                 else
                 {
-                    if ((DateTime.Now.Subtract(_lastOrbit).TotalSeconds > 15)) //abuse the lastorbit timestamp here - ugly
+                    if (DateTime.Now > Cache.Instance._nextOrbit) //abuse the lastorbit timestamp here for debugging
                     {
                         //Logging.Log("MissionController: kill: we are already on approach to the target");
                     }
@@ -836,7 +877,7 @@ namespace Questor.Modules
             }
             else
             {
-                if ((DateTime.Now.Subtract(_lastOrbit).TotalSeconds > 15)) //abuse the lastorbit timestamp here - ugly
+                if (DateTime.Now > Cache.Instance._nextOrbit) //abuse the lastorbit timestamp here
                 {
                     Cache.Instance.TimeSpentInMissionInRange = Cache.Instance.TimeSpentInMissionInRange + ((int)Time.QuestorPulse_milliseconds / 1000); //their has to be a more precise way to do this...
                     //Logging.Log("MissionController: kill: target(s) are IN range");
@@ -961,6 +1002,27 @@ namespace Questor.Modules
             }
         }
 
+        private void UseDrones(Action action)
+        {
+            bool usedrones;
+            if (!bool.TryParse(action.GetParameterValue("use"), out usedrones))
+                usedrones = true;
+
+            if (!usedrones)
+            {
+                Logging.Log("MissionController.UseDrones: Disable launch of drones");
+                Cache.Instance.UseDrones = false;
+            }
+            else
+            {
+                Logging.Log("MissionController.UseDrones: Enable launch of drones");
+                Cache.Instance.UseDrones = true;
+            }
+
+            _currentAction++;
+            return;
+        }
+
         private void AttackClosestByNameAction(Action action)
         {
             bool nottheclosest;
@@ -1000,7 +1062,7 @@ namespace Questor.Modules
             {
                 if (!Cache.Instance.PriorityTargets.Any(pt => pt.Id == target.Id))
                 {
-                    Logging.Log("MissionController.AttackClosestByName: Adding [" + target.Name + "][" + target.Id + "] as a priority target");
+                    Logging.Log("MissionController.AttackClosestByName: Adding [" + target.Name + "][ID: " + target.Id + "] as a priority target");
                     Cache.Instance.AddPriorityTargets(new[] { target }, Priority.PriorityKillTarget);
                 }
 
@@ -1025,26 +1087,26 @@ namespace Questor.Modules
             {
                 if (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != target.Id)
                 {
-                    Logging.Log("MissionController.AttackClosestByName: Approaching target [" + target.Name + "][" + target.Id + "]");
+                    Logging.Log("MissionController.AttackClosestByName: Approaching target [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance / 1000, 0) + "k away]");
 
                     if (Settings.Instance.SpeedTank)
                     {
-                        if (DateTime.Now.Subtract(_lastOrbit).TotalSeconds > 15)
+                        if (DateTime.Now > Cache.Instance._nextOrbit)
                         {
                             target.Orbit(Cache.Instance.OrbitDistance); //orbit
                             Logging.Log("MissionController: AttackClosestByName: initiating Orbit of [" + target.Name + "] orbiting at [" + Cache.Instance.OrbitDistance + "]");
-                            _lastOrbit = DateTime.Now;
+                            Cache.Instance._nextOrbit = DateTime.Now.AddSeconds((int)Time.OrbitDelay_seconds);
                         }
                     }
                     else if (Settings.Instance.OptimalRange > 0)
                     {
                         target.Approach((int)(Settings.Instance.OptimalRange * 0.8d)); // Move within 80% of optimalrange
-                        Logging.Log("MissionController: AttackClosestByName: initiating Approach of [" + target.Name + "] distance: [" + target.Distance + "] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                        Logging.Log("MissionController: AttackClosestByName: initiating Approach of [" + target.Name + "] distance: [" + Math.Round(target.Distance,0) + "] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
                     }
                     else
                     {
                         target.Approach((int)(Cache.Instance.WeaponRange * 0.8d)); // Move within 80% of range
-                        Logging.Log("MissionController: AttackClosestByName: initiating Approach of [" + target.Name + "] distance: [" + target.Distance + "] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                        Logging.Log("MissionController: AttackClosestByName: initiating Approach of [" + target.Name + "] distance: [" + Math.Round(target.Distance,0) + "] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
                     }
                 }
             }
@@ -1088,7 +1150,7 @@ namespace Questor.Modules
             {
                 if (!Cache.Instance.PriorityTargets.Any(pt => pt.Id == target.Id))
                 {
-                    Logging.Log("MissionController.AttackClosest: Adding [" + target.Name + "][" + target.Id + "] as a priority target");
+                    Logging.Log("MissionController.AttackClosest: Adding [" + target.Name + "][ID: " + target.Id + "] as a priority target");
                     Cache.Instance.AddPriorityTargets(new[] { target }, Priority.PriorityKillTarget);
                 }
 
@@ -1113,27 +1175,35 @@ namespace Questor.Modules
             {
                 if (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != target.Id)
                 {
-                    Logging.Log("MissionController.AttackClosest: Approaching target [" + target.Name + "][" + target.Id + "]");
+                    Logging.Log("MissionController.AttackClosest: Approaching target [" + target.Name + "][ID: " + target.Id + "][" + Math.Round(target.Distance / 1000, 0) + "k away]");
 
                     if (Settings.Instance.SpeedTank)
                     {
-                        if (DateTime.Now.Subtract(_lastOrbit).TotalSeconds > 15)
+                        if (DateTime.Now > Cache.Instance._nextOrbit)
                         {
                             target.Orbit(Cache.Instance.OrbitDistance); //orbit
                             Logging.Log("MissionController: AttackClosest: initiating Orbit of [" + target.Name + "] orbiting at [" + Cache.Instance.OrbitDistance + "]");
-                            _lastOrbit = DateTime.Now;
+                            Cache.Instance._nextOrbit = DateTime.Now.AddSeconds((int)Time.OrbitDelay_seconds);
                             
                         }
                     }
                     else if (Settings.Instance.OptimalRange > 0)
                     {
-                        target.Approach((int)(Settings.Instance.OptimalRange * 0.8d)); // Move within 80% of optimalrange
-                        Logging.Log("MissionController: AttackClosest: initiating Approach of [" + target.Name + "] distance: [" + target.Distance + "] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                        if (DateTime.Now > Cache.Instance._nextApproachAction)
+                        {
+                            target.Approach((int)(Settings.Instance.OptimalRange * 0.8d)); // Move within 80% of optimalrange
+                            Logging.Log("MissionController: AttackClosest: initiating Approach of [" + target.Name + "][" + Math.Round(target.Distance/1000,0) + "k away] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                            Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                        }
                     }
                     else
                     {
-                        target.Approach((int)(Cache.Instance.WeaponRange * 0.8d)); // Move within 80% of range
-                        Logging.Log("MissionController: AttackClosest: initiating Approach of [" + target.Name + "] distance: [" + target.Distance + "] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                        if (DateTime.Now > Cache.Instance._nextApproachAction)
+                        {
+                            target.Approach((int)(Cache.Instance.WeaponRange * 0.8d)); // Move within 80% of range
+                            Logging.Log("MissionController: AttackClosest: initiating Approach of [" + target.Name + "][" + Math.Round(target.Distance / 1000, 0) + "k away] approaching to [" + (Settings.Instance.OptimalRange * 0.8d) + "]");
+                            Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                        }
                     }
                 }
             }
@@ -1141,9 +1211,10 @@ namespace Questor.Modules
 
         private void LootItemAction(Action action)
         {
+            Cache.Instance.MissionLoot = true;
             var items = action.GetParameterValues("item");
             var targetNames = action.GetParameterValues("target");
-                // if we arent generally looting we need to re-enable the opening of wrecks to
+                // if we aren't generally looting we need to re-enable the opening of wrecks to
                 // find this LootItems we are looking for
                 Cache.Instance.OpenWrecks = true;
 
@@ -1164,6 +1235,7 @@ namespace Questor.Modules
                 Logging.Log("MissionController.LootItem: We are done looting");
                     // now that we've completed this action revert OpenWrecks to false
                     Cache.Instance.OpenWrecks = false;
+                    Cache.Instance.MissionLoot = false;
                 _currentAction++;
                 return;
             }
@@ -1182,8 +1254,12 @@ namespace Questor.Modules
             var closest = containers.FirstOrDefault(c => targetNames.Contains(c.Name)) ?? containers.First();
             if (closest.Distance > (int)Distance.SafeScoopRange && (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != closest.Id))
             {
-                Logging.Log("MissionController.LootItem: Approaching target [" + closest.Name + "][" + closest.Id + "]");
-                closest.Approach();
+                if (DateTime.Now > Cache.Instance._nextApproachAction)
+                {
+                    Logging.Log("MissionController.LootItem: Approaching target [" + closest.Name + "][ID: " + closest.Id + "] which is at [" + Math.Round(closest.Distance / 1000, 0) + "k away]");
+                    closest.Approach();
+                    Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                }
             }
         }
 
@@ -1191,7 +1267,7 @@ namespace Questor.Modules
         {
             var items = action.GetParameterValues("item");
             var targetNames = action.GetParameterValues("target");
-                // if we arent generally looting we need to re-enable the opening of wrecks to
+                // if we aren't generally looting we need to re-enable the opening of wrecks to
                 // find this LootItems we are looking for
                 Cache.Instance.OpenWrecks = true;
             if (!Settings.Instance.LootEverything)
@@ -1233,8 +1309,12 @@ namespace Questor.Modules
             var closest = containers.FirstOrDefault(c => targetNames.Contains(c.Name)) ?? containers.First();
             if (closest.Distance > (int)Distance.SafeScoopRange && (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != closest.Id))
             {
-                Logging.Log("MissionController.Loot: Approaching target [" + closest.Name + "][" + closest.Id + "]");
-                closest.Approach();
+                if (DateTime.Now > Cache.Instance._nextApproachAction)
+                {
+                    Logging.Log("MissionController.Loot: Approaching target [" + closest.Name + "][ID: " + closest.Id + "][" + Math.Round(closest.Distance / 1000, 0) + "k away]");
+                    closest.Approach();
+                    Cache.Instance._nextApproachAction = DateTime.Now.AddSeconds((int)Time.ApproachDelay_seconds);
+                }
             }
         }
 
@@ -1242,7 +1322,7 @@ namespace Questor.Modules
         {
             bool clear;
             if (!bool.TryParse(action.GetParameterValue("clear"), out clear))
-                clear = false; 
+                clear = false;
             
             var add = action.GetParameterValues("add");
             var remove = action.GetParameterValues("remove");
@@ -1283,6 +1363,7 @@ namespace Questor.Modules
                 case ActionState.Done:
                     // Tell the drones module to retract drones
                     Cache.Instance.IsMissionPocketDone = true;
+                    Cache.Instance.UseDrones = true;
 
                     // We do not switch to "done" status if we still have drones out
                     if (Cache.Instance.ActiveDrones.Count() > 0)
@@ -1293,11 +1374,11 @@ namespace Questor.Modules
                         BookmarkPocketForSalvaging();
 
                     // Reload weapons
-                    if (DateTime.Now.Subtract(_lastReload).TotalSeconds > 10)
+                    if (DateTime.Now > Cache.Instance._nextReload)
                     {
-                        Logging.Log("MissionController: ReloadAll: Reload becasue ActionState is Done - Reloading Weapons.");
+                        Logging.Log("MissionController: ReloadAll: Reload because ActionState is Done - Reloading Weapons.");
                         ReloadAll();
-                        _lastReload = DateTime.Now;
+                        Cache.Instance._nextReload = DateTime.Now.AddSeconds((int)Time.ReloadWeaponDelayBeforeUsable_seconds);
                     }
 
                     State = MissionControllerState.Done;
@@ -1309,6 +1390,10 @@ namespace Questor.Modules
 
                 case ActionState.KillOnce:
                     KillOnceAction(action);
+                    break;
+
+                case ActionState.UseDrones:
+                    UseDrones(action);
                     break;
 
                 case ActionState.AttackClosestByName:
@@ -1325,6 +1410,10 @@ namespace Questor.Modules
 
                 case ActionState.MoveToBackground:
                     MoveToBackgroundAction(action);
+                    break;
+
+                case ActionState.ClearWithinWeaponsRangeOnly:
+                    ClearWithinWeaponsRangeOnlyAction(action);
                     break;
 
                 case ActionState.Loot:
@@ -1451,6 +1540,10 @@ namespace Questor.Modules
                     }
 
                     var action = _pocketActions[_currentAction];
+                    if (action.ToString() != Cache.Instance.CurrentPocketAction)
+                    {
+                        Cache.Instance.CurrentPocketAction = action.ToString();
+                    }
                     var currentAction = _currentAction;
                     PerformAction(action);
 
@@ -1473,7 +1566,7 @@ namespace Questor.Modules
                     var distance = Cache.Instance.DistanceFromMe(_lastX, _lastY, _lastZ);
                     if (distance > (int)Distance.NextPocketDistance)
                     {
-                        Logging.Log("MissionController: We've moved to the next Pocket [" + distance + "]");
+                        Logging.Log("MissionController: We've moved to the next Pocket [" + Math.Round(distance/1000,0) + "k away]");
 
                         // If we moved more then 100km, assume next Pocket
                         _pocket++;
@@ -1481,7 +1574,7 @@ namespace Questor.Modules
                         LogStatistics();
                         
                     }
-                    else if (DateTime.Now.Subtract(_lastActivateAction).TotalMinutes > 2)
+                    else if (DateTime.Now.Subtract(_moveToNextPocket).TotalMinutes > 2)
                     {
                         Logging.Log("MissionController: We've timed out, retry last action");
 
