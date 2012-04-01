@@ -17,7 +17,7 @@ namespace Questor.Modules
         SafeDistancefromStructure = 10000,
         WarptoDistance = 152000,
         NextPocketDistance = 100000, // If we moved more then 100km, assume next Pocket
-        GateActivationRange = 2300,
+        GateActivationRange = 2490,
         CloseToGateActivationRange = GateActivationRange + 5000,
         WayTooClose = -10100, // This is usually used to determine how far inside the 'docking ring' of an acceleration gate we are. 
         OrbitDistanceCushion = 5000, // This is used to determine when to stop orbiting or approaching, if not speed tanking (orbit distance + orbitdistancecushion)

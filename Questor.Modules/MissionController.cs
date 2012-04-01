@@ -220,9 +220,16 @@ namespace Questor.Modules
                 }
                 return;
             }
+
+            var closest = targets.OrderBy(t => t.Distance).First();
+            if (closest.Distance < 2489)
+            {
+                Logging.Log("MissionController.MoveTo We are [" + closest.Distance + "] from a [" + closest.Name + "] we dont need to go any further");
+                _currentAction++;
+                return;
+            }
             
             //if (closest.Distance <= (int)Distance.CloseToGateActivationRange) // if your distance is less than the 'close enough' range, default is 7000 meters
-            var closest = targets.OrderBy(t => t.Distance).First();
             if (closest.Distance < (int)Distance.GateActivationRange)
             {
                 // Tell the drones module to retract drones
