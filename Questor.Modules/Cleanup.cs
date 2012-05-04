@@ -9,6 +9,7 @@ namespace Questor.Modules
    {
       public CleanupState State { get; set; }
       private DateTime _lastCleanupAction;
+      bool missionerror = false;
       
       public void ProcessState()
       {
@@ -65,6 +66,29 @@ namespace Questor.Modules
                            Cache.Instance.SessionState = "Quitting";
                            break;
                         }
+                        
+                        if (window.Html.Contains("Please check your mission journal for further information."))
+                                {
+
+                                    if (missionerror)
+                                    {
+
+
+                                        Logging.Log("Cleanup: This window indicates about completing mission error: 2nd error");
+                                        //Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.CmdLogOff); //this causes the questor window to not re-appear
+                                        Settings.Instance.AutoStart = false;
+                                        Cache.Instance.CloseQuestorCMDLogoff = false;
+                                        Cache.Instance.CloseQuestorCMDExitGame = true;
+                                        Cache.Instance.ReasonToStopQuestor = "error mission";
+                                        Cache.Instance.SessionState = "Exiting";
+                                                                               
+                                        window.Close();
+                                        break;
+                                    }
+                                    Logging.Log("Cleanup: This window indicates about completing mission error: 1st error");
+                                    missionerror = true;
+                                }
+
 
                         // In space "shit"
                         close |= window.Html.Contains("Item cannot be moved back to a loot container.");
