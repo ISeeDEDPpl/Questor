@@ -34,13 +34,14 @@ namespace QuestorStatistics
             System.IO.DirectoryInfo o = new System.IO.DirectoryInfo(Localpath);
             //System.IO.FileInfo[] myfiles = null;
 
-            //var logfilepattern = "*.CustomDatedStatistics.csv";
-            //var fileIter = Directory.EnumerateFiles(Localpath, logfilepattern, System.IO.SearchOption.AllDirectories);
+            var logfilepattern = "*.CustomDatedStatistics.csv";
+            IEnumerable<string> fileIter = Directory.EnumerateFiles(Localpath, logfilepattern, System.IO.SearchOption.AllDirectories);
 
-            //foreach (var file in fileIter)
-            //{
-            //    cmb1.Items.Add(file);
-            //}
+            foreach (string file in fileIter)
+            {
+                string[] splits = file.Split('\\');
+                cmb1.Items.Add(splits[splits.Length-1]);
+            }
 
             //for (int y = 0; y <= myfiles.Length - 1; y++)
             //{
