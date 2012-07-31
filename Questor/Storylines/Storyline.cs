@@ -36,13 +36,67 @@ namespace Questor.Storylines
 
             _storylines = new Dictionary<string, IStoryline>
                             {
-                               //{"__", new GenericCombatStoryline()}, //example
+                               // Examples
+                               //{"StorylineCombatNameHere", new GenericCombatStoryline()},
+                               //{"StorylineCourierNameHere", new GenericCourier()},
+
+                               /* COURIER/DELIVERY - ALL RACES */
                                {"Materials For War Preparation", new MaterialsForWarPreparation()},
-                               {"Shipyard Theft", new GenericCombatStoryline()},
-                               {"Evolution", new GenericCombatStoryline()},
-                               {"Record Cleaning", new GenericCombatStoryline()},
+                               {"Transaction Data Delivery", new TransactionDataDelivery()},
+                               //{"A Special Delivery", new GenericCourier()}, // Needs 40k m3 cargo capacity (i.e. Iteron Mark V, T2 CHO rigs)
+                               /* COURIER/DELIVERY - AMARR */
+                               {"Opiate of the Masses", new GenericCourier()},
+                               {"Send the Marines", new GenericCourier()},
+                               {"The Governors Ball", new GenericCourier()},
+                               {"The State of the Empire", new GenericCourier()},
+                               {"Unmasking the Traitor", new GenericCourier()},
+                               /* COURIER/DELIVERY - CALDARI */
+                               {"A Desperate Rescue", new GenericCourier()},
+                               {"Black Ops Crisis", new GenericCourier()},
+                               {"Fire and Ice", new GenericCourier()},
+                               {"Hunting Black Dog", new GenericCourier()},
+                               {"Operation Doorstop", new GenericCourier()},
+                               /* COURIER/DELIVERY - GALLENTE */
+                               /* COURIER/DELIVERY - MINMATAR */
+                               {"A Cargo With Attitude", new GenericCourier()},
+                               {"A Load of Scrap", new GenericCourier()},
+                               {"Brand New Harvesters", new GenericCourier()},
+                               {"Heart of the Rogue Drone", new GenericCourier()},
+                               {"Their Secret Defense", new GenericCourier()},
+                               /* COURIER/DELIVERY - NEEDS SORTING */
+                               {"On the Run", new GenericCourier()},
+                               {"A Fathers Love", new GenericCourier()},
+
+                               /* COMBAT - ALL RACES */
                                {"Covering Your Tracks", new GenericCombatStoryline()},
+                               {"Evolution", new GenericCombatStoryline()},
+                               {"Patient Zero", new GenericCombatStoryline()},
+                               {"Record Cleaning", new GenericCombatStoryline()},
+                               {"Shipyard Theft", new GenericCombatStoryline()},
+                               {"Soothe the Salvage Beast", new GenericCombatStoryline()},
+                               /* COMBAT - AMARR */
+                               {"Blood Farm", new GenericCombatStoryline()},
+                               {"Dissidents", new GenericCombatStoryline()},
+                               {"Extract the Renegade", new GenericCombatStoryline()},
+                               {"Gate to Nowhere", new GenericCombatStoryline()},
+                               {"Racetrack Ruckus", new GenericCombatStoryline()},
+                               {"The Mouthy Merc", new GenericCombatStoryline()},
+                               /* COMBAT - CALDARI */
                                {"Crowd Control", new GenericCombatStoryline()},
+                               {"Forgotten Outpost", new GenericCombatStoryline()},
+                               {"Illegal Mining", new GenericCombatStoryline()},
+                               {"Innocents in the Crossfire", new GenericCombatStoryline()},
+                               {"Jealous Rivals", new GenericCombatStoryline()},
+                               {"Stem the Flow", new GenericCombatStoryline()},
+                               /* COMBAT - GALLENTE */
+                               /* COMBAT - MINMATAR */
+                               {"Amarrian Excavators", new GenericCombatStoryline()},
+                               {"Diplomatic Incident", new GenericCombatStoryline()},
+                               {"Nine Tenths of the Wormhole", new GenericCombatStoryline()},
+                               {"Postmodern Primitives", new GenericCombatStoryline()},
+                               {"Quota Season", new GenericCombatStoryline()},
+                               {"The Blood of Angry Men", new GenericCombatStoryline()},
+                               /* COMBAT - NEEDS SORTING */
                                {"A Force to Be Reckoned With", new GenericCombatStoryline()},
                                {"Kidnappers Strike - Ambush In The Dark (1 of 10)", new GenericCombatStoryline()},
                                {"Kidnappers Strike - The Kidnapping (3 of 10)", new GenericCombatStoryline()},
@@ -54,28 +108,8 @@ namespace Questor.Storylines
                                {"Whispers in the Dark - First Contact (1 of 4)", new GenericCombatStoryline()},
                                {"Whispers in the Dark - Lay and Pray (2 of 4)", new GenericCombatStoryline()},
                                {"Whispers in the Dark - The Outpost (4 of 4)", new GenericCombatStoryline()},
-                               {"Transaction Data Delivery", new TransactionDataDelivery()},
-                               {"Innocents in the Crossfire", new GenericCombatStoryline()},
-                               {"Patient Zero", new GenericCombatStoryline()},
-                               {"Soothe the Salvage Beast", new GenericCombatStoryline()},
-                               {"Forgotten Outpost", new GenericCombatStoryline()},
-                               {"Stem the Flow", new GenericCombatStoryline()},
-                               {"Nine Tenths of the Wormhole", new GenericCombatStoryline()},
-                               {"Blood Farm", new GenericCombatStoryline()},
-                               {"Jealous Rivals", new GenericCombatStoryline()},
-                               
-                               {"Quota Season", new GenericCombatStoryline()},
+                               {"Matriarch", new GenericCombatStoryline()},
                                {"Pirate Radio", new GenericCombatStoryline()},
-                               {"Operation Doorstop", new GenericCourier()},
-                               {"Black Ops Crisis", new GenericCourier()},
-                               {"On the Run", new GenericCourier()},
-                               {"A Fathers Love", new GenericCourier()},
-                               {"Fire and Ice", new GenericCourier()},
-                               //{"Matriarch", new GenericCombatStoryline()},
-                               //{"Diplomatic Incident", new GenericCombatStoryline()},
-                               //these work but are against other factions that I generally like to avoid
-                               //{"The Blood of Angry Men", new GenericCombatStoryline()},  //amarr faction
-                               //{"Amarrian Excavators", new GenericCombatStoryline()}, 	//amarr faction
                             };
         }
 
