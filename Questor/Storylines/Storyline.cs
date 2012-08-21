@@ -1,4 +1,4 @@
-﻿
+
 namespace Questor.Storylines
 {
     using System;
@@ -68,7 +68,7 @@ namespace Questor.Storylines
                                {"Brand New Harvesters", new GenericCourier()},
                                {"Heart of the Rogue Drone", new GenericCourier()},
                                {"Their Secret Defense", new GenericCourier()},
-                               /* COURIER/DELIVERY - More Than One Race */
+                               /* COURIER/DELIVERY - MORE THAN ONE RACE */
                                
                                /* COMBAT - ALL FACTIONS */
                                {"Covering Your Tracks", new GenericCombatStoryline()},
@@ -92,15 +92,6 @@ namespace Questor.Storylines
                                {"Jealous Rivals", new GenericCombatStoryline()},
                                {"Stem the Flow", new GenericCombatStoryline()},
                                /* COMBAT - GALLENTE */
-                               /* COMBAT - MINMATAR */
-                               {"Amarrian Excavators", new GenericCombatStoryline()},
-                               {"Diplomatic Incident", new GenericCombatStoryline()},
-                               {"Nine Tenths of the Wormhole", new GenericCombatStoryline()},
-                               {"Postmodern Primitives", new GenericCombatStoryline()},
-                               {"Quota Season", new GenericCombatStoryline()},
-                               {"The Blood of Angry Men", new GenericCombatStoryline()},
-                               /* COMBAT - NEEDS SORTING */
-                               {"A Force to Be Reckoned With", new GenericCombatStoryline()},
                                {"Kidnappers Strike - Ambush In The Dark (1 of 10)", new GenericCombatStoryline()},
                                {"Kidnappers Strike - The Kidnapping (3 of 10)", new GenericCombatStoryline()},
                                {"Kidnappers Strike - Incriminating Evidence (5 of 10)", new GenericCombatStoryline()},
@@ -111,8 +102,15 @@ namespace Questor.Storylines
                                {"Whispers in the Dark - First Contact (1 of 4)", new GenericCombatStoryline()},
                                {"Whispers in the Dark - Lay and Pray (2 of 4)", new GenericCombatStoryline()},
                                {"Whispers in the Dark - The Outpost (4 of 4)", new GenericCombatStoryline()},
-                               {"Matriarch", new GenericCombatStoryline()},
-                               {"Pirate Radio", new GenericCombatStoryline()},
+                               /* COMBAT - MINMATAR */
+                               {"Amarrian Excavators", new GenericCombatStoryline()},
+                               {"Diplomatic Incident", new GenericCombatStoryline()},
+                               {"Matriarch", new GenericCombatStoryline()},  
+                               {"Nine Tenths of the Wormhole", new GenericCombatStoryline()},
+                               {"Postmodern Primitives", new GenericCombatStoryline()},
+                               {"Quota Season", new GenericCombatStoryline()},
+                               {"The Blood of Angry Men", new GenericCombatStoryline()},
+                               /* COMBAT - MORE THAN ONE RACE */                                                            
                             };
         }
 
