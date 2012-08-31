@@ -431,7 +431,15 @@ namespace Questor
             }
 
             if (DateTime.Now < Cache.Instance.NextInSpaceorInStation)
+            {
+                if (Cache.Instance.DirectEve.ActiveShip.GroupId == (int)Group.Capsule)
+                {
+                    Logging.Log("Panic", "We are in a pod. Don't wait for the session wait timer to expire!", Logging.red);
+                    Cache.Instance.NextInSpaceorInStation = DateTime.Now;
+                    return true;
+                }
                 return false;
+            }
 
             // Check 3D rendering
             if (Cache.Instance.DirectEve.Session.IsInSpace &&
