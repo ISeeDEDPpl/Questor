@@ -222,7 +222,7 @@ namespace Questor.Modules.BackgroundTasks
                             if (Cache.Instance.PriorityTargets.Any(pt => pt.IsWarpScramblingMe))
                             {
                                 EntityCache warpscrambledby = Cache.Instance.PriorityTargets.FirstOrDefault(pt => pt.IsWarpScramblingMe);
-                                if (warpscrambledby != null && _nextWrapScrambledWarning > DateTime.Now)
+                                if (warpscrambledby != null && _nextWrapScrambledWarning < DateTime.Now)
                                 {
                                     _nextWrapScrambledWarning = DateTime.Now.AddSeconds(20);
                                     Logging.Log("Panic", "We are scrambled by: [" + Logging.white + warpscrambledby.Name + Logging.orange + "][" + Logging.white + Math.Round(warpscrambledby.Distance, 0) + Logging.orange + "][" + Logging.white + warpscrambledby.Id + Logging.orange + "]",
