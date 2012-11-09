@@ -297,7 +297,7 @@ namespace Questor
                 }
                 else
                 {
-                    dateTimePicker1.Value = DateTime.Now.AddHours(1);
+                    dateTimePicker1.Value = DateTime.UtcNow.AddHours(1);
                     if (!dateTimePicker2.Checked)
                     {
                         Cache.Instance.StopTimeSpecified = true;
@@ -321,7 +321,7 @@ namespace Questor
                 }
                 else
                 {
-                    dateTimePicker1.Value = DateTime.Now.AddHours(1);
+                    dateTimePicker1.Value = DateTime.UtcNow.AddHours(1);
                     if (!dateTimePicker1.Checked)
                     {
                         Cache.Instance.StopTimeSpecified = true;

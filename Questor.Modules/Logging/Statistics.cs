@@ -69,7 +69,7 @@ namespace Questor.Modules.Logging
             //}
             //else //assume LocalTime
             //{
-            DateTimeForLogs = DateTime.Now;
+            DateTimeForLogs = DateTime.UtcNow;
             //}
 
             if (Settings.Instance.WreckLootStatistics)
@@ -220,7 +220,7 @@ namespace Questor.Modules.Logging
             //}
             //else //assume LocalTime
             //{
-            DateTimeForLogs = DateTime.Now;
+            DateTimeForLogs = DateTime.UtcNow;
             //}
 
             if (Settings.Instance.DroneStatsLog && !Statistics.Instance.DroneLoggingCompleted)
@@ -276,7 +276,7 @@ namespace Questor.Modules.Logging
             //}
             //else //assume LocalTime
             //{
-            DateTimeForLogs = DateTime.Now;
+            DateTimeForLogs = DateTime.UtcNow;
             //}
 
             if (Settings.Instance.SessionsLog)
@@ -327,7 +327,7 @@ namespace Questor.Modules.Logging
             //}
             //else //assume LocalTime
             //{
-            DateTimeForLogs = DateTime.Now;
+            DateTimeForLogs = DateTime.UtcNow;
             //}
 
             if (Settings.Instance.SessionsLog) // if false we do not write a sessionlog, doubles as a flag so we don't write the sessionlog more than once
@@ -386,7 +386,7 @@ namespace Questor.Modules.Logging
             //}
             //else //assume LocalTime
             //{
-            DateTimeForLogs = DateTime.Now;
+            DateTimeForLogs = DateTime.UtcNow;
             //}
 
             // We are not supposed to create bookmarks
@@ -450,7 +450,7 @@ namespace Questor.Modules.Logging
             //}
             //else //assume LocalTime
             //{
-            DateTimeForLogs = DateTime.Now;
+            DateTimeForLogs = DateTime.UtcNow;
             //}
 
             if (Cache.Instance.InSpace)

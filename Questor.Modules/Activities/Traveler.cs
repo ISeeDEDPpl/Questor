@@ -221,7 +221,7 @@ namespace Questor.Modules.Activities
             //
             if (Cache.Instance.InSpace && Settings.Instance.DefendWhileTraveling)
             {
-                if (!Cache.Instance.DirectEve.ActiveShip.Entity.IsCloaked || (Cache.Instance.LastSessionChange.AddSeconds(60) > DateTime.Now))
+                if (!Cache.Instance.DirectEve.ActiveShip.Entity.IsCloaked || (Cache.Instance.LastSessionChange.AddSeconds(60) > DateTime.UtcNow))
                 {
                     if (Settings.Instance.DebugGotobase) Logging.Log(module, "TravelToMiningHomeBookmark: _combat.ProcessState()", Logging.White);
                     _combat.ProcessState();
@@ -265,7 +265,7 @@ namespace Questor.Modules.Activities
                 Traveler.ProcessState();
 
                 //we also assume you are connected during a manual set of questor into travel mode (safe assumption considering someone is at the kb)
-                Cache.Instance.LastKnownGoodConnectedTime = DateTime.Now;
+                Cache.Instance.LastKnownGoodConnectedTime = DateTime.UtcNow;
                 Cache.Instance.MyWalletBalance = Cache.Instance.DirectEve.Me.Wealth;
 
                 if (_States.CurrentTravelerState == TravelerState.AtDestination)
