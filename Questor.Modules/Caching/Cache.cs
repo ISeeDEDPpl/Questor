@@ -1618,11 +1618,11 @@ namespace Questor.Modules.Caching
 
         public bool StopTimeSpecified = true;
 
-        public DateTime StopTime = DateTime.Now.AddHours(10);
+        public DateTime StopTime = DateTime.UtcNow.AddHours(10);
 
-        public DateTime ManualStopTime = DateTime.Now.AddHours(10);
+        public DateTime ManualStopTime = DateTime.UtcNow.AddHours(10);
 
-        public DateTime ManualRestartTime = DateTime.Now.AddHours(10);
+        public DateTime ManualRestartTime = DateTime.UtcNow.AddHours(10);
 
         public DateTime StartTime { get; set; }
 
@@ -2855,8 +2855,8 @@ namespace Questor.Modules.Caching
                     {
                         // No, command it to open
                         Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.OpenCargoHoldOfActiveShip);
-                        Cache.Instance.NextOpenCargoAction = DateTime.Now.AddSeconds(Cache.Instance.RandomNumber(1, 2));
-                        Logging.Log(module, "Opening Cargohold of active ship: waiting [" + Math.Round(Cache.Instance.NextOpenCargoAction.Subtract(DateTime.Now).TotalSeconds, 0) + "sec]", Logging.White);
+                        Cache.Instance.NextOpenCargoAction = DateTime.UtcNow.AddSeconds(Cache.Instance.RandomNumber(1, 2));
+                        Logging.Log(module, "Opening Cargohold of active ship: waiting [" + Math.Round(Cache.Instance.NextOpenCargoAction.Subtract(DateTime.UtcNow).TotalSeconds, 0) + "sec]", Logging.White);
                         return false;
                     }
 
@@ -2876,7 +2876,7 @@ namespace Questor.Modules.Caching
                     {
                         if (Settings.Instance.DebugCargoHold) Logging.Log(module, "DebugHangars:Opening cargoHold window as secondary", Logging.DebugHangars);
                         Cache.Instance.CargoHold.Window.OpenAsSecondary();
-                        Cache.Instance.NextOpenCargoAction = DateTime.Now.AddMilliseconds(1000 + Cache.Instance.RandomNumber(0, 2000));
+                        Cache.Instance.NextOpenCargoAction = DateTime.UtcNow.AddMilliseconds(1000 + Cache.Instance.RandomNumber(0, 2000));
                         return false;
                     }
                     return true;

@@ -62,7 +62,7 @@ namespace Questor.Modules.Logging
             //}
             //else //assume LocalTime
             //{
-                DateTimeForLogs = DateTime.Now;
+                DateTimeForLogs = DateTime.UtcNow;
             //}
             
             string colorLogLine = line;
