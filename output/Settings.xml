@@ -6,7 +6,7 @@
   
   <debugActivateGate>false</debugActivateGate>
   <debugActivateWeapons>false</debugActivateWeapons>
-  <debugAgentInteractionReplyToAgent>false</DebugAgentInteractionReplyToAgent>
+  <debugAgentInteractionReplyToAgent>false</debugAgentInteractionReplyToAgent>
   <debugAllMissionsOnBlackList>false</debugAllMissionsOnBlackList>
   <debugAllMissionsOnGreyList>false</debugAllMissionsOnGreyList>
   <debugArm>false</debugArm>
