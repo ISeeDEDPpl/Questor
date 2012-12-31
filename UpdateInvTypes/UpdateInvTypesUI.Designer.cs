@@ -43,7 +43,7 @@
             this.UpdateButton.TabIndex = 0;
             this.UpdateButton.Text = "Update";
             this.UpdateButton.UseVisualStyleBackColor = true;
-            this.UpdateButton.Click += new System.EventHandler(this.Update_Click);
+            this.UpdateButton.Click += new System.EventHandler(this.UpdateClick);
             // 
             // Progress
             // 
@@ -55,7 +55,7 @@
             // tUpdate
             // 
             this.tUpdate.Enabled = true;
-            this.tUpdate.Tick += new System.EventHandler(this.tUpdate_Tick);
+            this.tUpdate.Tick += new System.EventHandler(this.UpdateTick);
             // 
             // chkfast
             // 

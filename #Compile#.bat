@@ -4,17 +4,15 @@ set releasetype=Debug
 ::
 :: path to msbuild compiler - do not include trailing slash
 ::
-set msbuild35=%systemroot%\Microsoft.Net\FrameWork\v3.5\msbuild.exe
+::set msbuild35=%systemroot%\Microsoft.Net\FrameWork\v3.5\msbuild.exe
 set msbuild4=%systemroot%\Microsoft.Net\FrameWork\v4.0.30319\msbuild.exe
 ::
 
 ::
 :: clear existing DLLs and EVEs from the previous build(s)
 ::
-del .\bin\debug\*.* /Q
-del .\bin\debug\*.* /Q
-del .\bin\release\*.* /Q
-del .\bin\release\*.* /Q
+del ".\bin\debug\*.*" /Q
+del ".\bin\release\*.*" /Q
 ::
 :: Build Project 1
 ::
@@ -86,6 +84,11 @@ if not exist output mkdir output >>nul 2>>nul
 :: Echo deleting old build from the output directory
 del .\output\*.exe /Q >>nul 2>>nul
 del .\output\*.dll /Q >>nul 2>>nul
+del .\output\*.pdb /Q >>nul 2>>nul
+del .\output\*.bak /Q >>nul 2>>nul
+:: the files that match the file pattern below are created by dropbox occassionally
+del ".\bin\release\* conflicted copy *.*" /Q >>nul 2>>nul
+
 ::
 :: DO NOT delete the XMLs as this is the ONLY directory they exist in now. 
 ::

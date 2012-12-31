@@ -36,6 +36,9 @@ if not exist output mkdir output >>nul 2>>nul
 :: Echo deleting old build from the output directory
 del .\output\*.exe /Q >>nul 2>>nul
 del .\output\*.dll /Q >>nul 2>>nul
+del .\output\*.pdb /Q >>nul 2>>nul
+del .\output\*.bak /Q >>nul 2>>nul
+
 ::
 :: DO NOT delete the XMLs as this is the ONLY directory they exist in now. 
 ::

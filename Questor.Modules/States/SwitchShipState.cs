@@ -12,5 +12,6 @@
         OpenFittingWindow,
         WaitForFittingWindow,
         ChoseFitting,
+        Cleanup,
     }
 }

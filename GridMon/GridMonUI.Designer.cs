@@ -1,6 +1,6 @@
 ﻿namespace GridMon
 {
-    partial class frmMain
+    partial class FrmMain
     {
         /// <summary>
         /// Required designer variable.
@@ -43,7 +43,7 @@
             this.btnStartStop.TabIndex = 0;
             this.btnStartStop.Text = "Start";
             this.btnStartStop.UseVisualStyleBackColor = true;
-            this.btnStartStop.Click += new System.EventHandler(this.btnStartStop_Click);
+            this.btnStartStop.Click += new System.EventHandler(this.BtnStartStopClick);
             // 
             // tbLog
             // 
@@ -65,9 +65,9 @@
             this.ClientSize = new System.Drawing.Size(345, 179);
             this.Controls.Add(this.tbLog);
             this.Controls.Add(this.btnStartStop);
-            this.Name = "frmMain";
+            this.Name = "FrmMain";
             this.Text = "GridMon";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmMain_FormClosed);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FrmMainFormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

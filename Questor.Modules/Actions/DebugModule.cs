@@ -37,7 +37,7 @@ namespace Questor.Modules.Actions
 
             foreach (DirectWindow window in windows)
             {
-                Logging.Log("DebugModule", "Debug_Windows: [" + window.Name + "]", Logging.white);
+                Logging.Log("DebugModule", "Debug_Windows: [" + window.Name + "]", Logging.White);
 
                 //if (window.Name.Contains(wreck.Name))
                 //{

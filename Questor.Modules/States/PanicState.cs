@@ -19,5 +19,6 @@ namespace Questor.Modules.States
         Resume,
         Repair,
         DelayedResume,
+        BookmarkMyWreck,
     }
 }

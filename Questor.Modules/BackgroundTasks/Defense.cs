@@ -12,23 +12,336 @@ namespace Questor.Modules.BackgroundTasks
 {
     using System;
     using System.Linq;
-    using System.Diagnostics;
+    using System.Collections.Generic;
     using global::Questor.Modules.Caching;
     using global::Questor.Modules.Lookup;
     using global::Questor.Modules.Logging;
+    using DirectEve;
 
     public class Defense
     {
         private DateTime _lastSessionChange = Cache.Instance.StartTime;
-        
-        private DateTime _lastPulse = DateTime.Now;
+
+        private DateTime _lastPulse = DateTime.UtcNow;
+        private int _trackingLinkScriptAttempts;
+        private int _sensorBoosterScriptAttempts;
+        private int _sensorDampenerScriptAttempts;
+        private int _trackingComputerScriptAttempts;
+        private int _trackingDisruptorScriptAttempts;
+        private int _ancillaryShieldBoosterAttempts;
+        private int _capacitorInjectorAttempts;
 
         private int ModuleNumber { get; set; }
 
+        private static readonly Dictionary<long, DateTime> NextScriptReload = new Dictionary<long, DateTime>();
+
+        private bool LoadthisScript(DirectItem scriptToLoad, ModuleCache module)
+        {
+            if (scriptToLoad != null)
+            {
+                if (module.IsActive || module.IsDeactivating || module.IsChangingAmmo || module.InLimboState || module.IsGoingOnline || !module.IsOnline)
+                    return false;
+
+                // We have enough ammo loaded
+                if (module.Charge != null && module.Charge.TypeId == scriptToLoad.TypeId && module.CurrentCharges >= 1)
+                {
+                    Logging.Log("LoadthisScript", "module is already loaded with the script we wanted", Logging.Teal);
+                    NextScriptReload[module.ItemId] = DateTime.UtcNow.AddSeconds(15); //mark this weapon as reloaded... by the time we need to reload this timer will have aged enough...
+                    return false;
+                }
+
+                // We are reloading, wait 15
+                if (NextScriptReload.ContainsKey(module.ItemId) && DateTime.UtcNow < NextScriptReload[module.ItemId].AddSeconds(15))
+                {
+                    Logging.Log("LoadthisScript", "module was reloaded recently... skipping", Logging.Teal);
+                    return false;
+                }
+                NextScriptReload[module.ItemId] = DateTime.UtcNow.AddSeconds(15);
+
+                // Reload or change ammo
+                if (module.Charge != null && module.Charge.TypeId == scriptToLoad.TypeId)
+                {
+                    if (DateTime.UtcNow.Subtract(Cache.Instance.LastLoggingAction).TotalSeconds > 10)
+                    {
+                        Cache.Instance.LastLoggingAction = DateTime.UtcNow;
+                    }
+                    Logging.Log("Defense", "Reloading [" + module.TypeId + "] with [" + scriptToLoad.TypeName + "][TypeID: " + scriptToLoad.TypeId + "]", Logging.Teal);
+                    module.ReloadAmmo(scriptToLoad);
+                }
+                else
+                {
+                    if (DateTime.UtcNow.Subtract(Cache.Instance.LastLoggingAction).TotalSeconds > 10)
+                    {
+                        Cache.Instance.LastLoggingAction = DateTime.UtcNow;
+                    }
+                    Logging.Log("Defense", "Changing [" + module.TypeId + "] with [" + scriptToLoad.TypeName + "][TypeID: " + scriptToLoad.TypeId + "]", Logging.Teal);
+                    module.ChangeAmmo(scriptToLoad);
+                }
+                return true;
+            }
+            Logging.Log("LoadthisScript", "script to load was NULL!", Logging.Teal);
+            return false;
+        }
+
         private void ActivateOnce()
         {
-            if (DateTime.Now < Cache.Instance.NextActivateSupportModules) //if we just did something wait a fraction of a second
+            //if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "spam", Logging.White);
+            if (DateTime.UtcNow < Cache.Instance.NextActivateSupportModules) //if we just did something wait a fraction of a second
                 return;
+
+            ModuleNumber = 0;
+            foreach (ModuleCache module in Cache.Instance.Modules)
+            {
+                if (!module.IsActivatable)
+                    continue;
+
+                //if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "Found Activatable Module [typeid: " + module.TypeId + "][groupID: " + module.GroupId +  "]", Logging.White);
+
+                if (module.GroupId == (int)Group.TrackingDisruptor ||
+                    module.GroupId == (int)Group.TrackingComputer ||
+                    module.GroupId == (int)Group.TrackingLink ||
+                    module.GroupId == (int)Group.SensorBooster ||
+                    module.GroupId == (int)Group.SensorDampener ||
+                    module.GroupId == (int)Group.AncillaryShieldBooster)
+                {
+                    //if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "---Found mod that could take a script [typeid: " + module.TypeId + "][groupID: " + module.GroupId + "][module.CurrentCharges [" + module.CurrentCharges + "]", Logging.White);
+                    if (module.CurrentCharges < 1)
+                    {
+                        if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "Found Activatable Module with no charge[typeID:" + module.TypeId + "]", Logging.White);
+                        DirectItem scriptToLoad;
+                        if (module.GroupId == (int)Group.TrackingDisruptor && _trackingDisruptorScriptAttempts < 5)
+                        {
+                            _trackingDisruptorScriptAttempts++;
+                            if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "TrackingDisruptor Found", Logging.White);
+                            scriptToLoad = Cache.Instance.CheckCargoForItem(Settings.Instance.TrackingDisruptorScript, 1);
+
+                            // this needs a counter and an abort after 10 tries or so... or itll keep checking the cargo for a script that may not exist
+                            // every second we are in space!
+                            if (scriptToLoad != null)
+                            {
+                                if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "TrackingDisruptor Found", Logging.White);
+                                if (module.IsActive)
+                                {
+                                    module.Click();
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddSeconds(2);
+                                    return;
+                                }
+
+                                if (module.IsActive || module.IsDeactivating || module.IsChangingAmmo || module.InLimboState || module.IsGoingOnline || !module.IsOnline)
+                                {
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                                    ModuleNumber++;
+                                    continue;
+                                }
+
+                                if (!LoadthisScript(scriptToLoad, module))
+                                {
+                                    ModuleNumber++;
+                                    continue;
+                                }
+                            }
+                            ModuleNumber++;
+                            continue;
+                        }
+
+                        if (module.GroupId == (int)Group.TrackingComputer && _trackingComputerScriptAttempts < 5)
+                        {
+                            _trackingComputerScriptAttempts++;
+                            if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "TrackingComputer Found", Logging.White);
+                            scriptToLoad = Cache.Instance.CheckCargoForItem(Settings.Instance.TrackingComputerScript, 1);
+                            if (scriptToLoad != null)
+                            {
+                                if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "Script Found for TrackingComputer", Logging.White);
+                                if (module.IsActive)
+                                {
+                                    module.Click();
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddSeconds(2);
+                                    return;
+                                }
+
+                                if (module.IsActive || module.IsDeactivating || module.IsChangingAmmo || module.InLimboState || module.IsGoingOnline || !module.IsOnline)
+                                {
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                                    ModuleNumber++;
+                                    continue;
+                                }
+
+                                if (!LoadthisScript(scriptToLoad, module))
+                                {
+                                    ModuleNumber++;
+                                    continue;
+                                }
+                            }
+                            ModuleNumber++;
+                            continue;
+                        }
+
+                        if (module.GroupId == (int)Group.TrackingLink && _trackingLinkScriptAttempts < 5)
+                        {
+                            _trackingLinkScriptAttempts++;
+                            if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "TrackingLink Found", Logging.White);
+                            scriptToLoad = Cache.Instance.CheckCargoForItem(Settings.Instance.TrackingLinkScript, 1);
+                            if (scriptToLoad != null)
+                            {
+                                if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "Script Found for TrackingLink", Logging.White);
+                                if (module.IsActive)
+                                {
+                                    module.Click();
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddSeconds(2);
+                                    return;
+                                }
+
+                                if (module.IsActive || module.IsDeactivating || module.IsChangingAmmo || module.InLimboState || module.IsGoingOnline || !module.IsOnline)
+                                {
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                                    ModuleNumber++;
+                                    continue;
+                                }
+
+                                if (!LoadthisScript(scriptToLoad, module))
+                                {
+                                    ModuleNumber++;
+                                    continue;
+                                }
+                            }
+                            ModuleNumber++;
+                            continue;
+                        }
+
+                        if (module.GroupId == (int)Group.SensorBooster && _sensorBoosterScriptAttempts < 5)
+                        {
+                            _sensorBoosterScriptAttempts++;
+                            if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "SensorBooster Found", Logging.White);
+                            scriptToLoad = Cache.Instance.CheckCargoForItem(Settings.Instance.SensorBoosterScript, 1);
+                            if (scriptToLoad != null)
+                            {
+                                if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "Script Found for SensorBooster", Logging.White);
+                                if (module.IsActive)
+                                {
+                                    module.Click();
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddSeconds(2);
+                                    return;
+                                }
+
+                                if (module.IsActive || module.IsDeactivating || module.IsChangingAmmo || module.InLimboState || module.IsGoingOnline || !module.IsOnline)
+                                {
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                                    ModuleNumber++;
+                                    continue;
+                                }
+
+                                if (!LoadthisScript(scriptToLoad, module))
+                                {
+                                    ModuleNumber++;
+                                    continue;
+                                }
+                            }
+                            ModuleNumber++;
+                            continue;
+                        }
+
+                        if (module.GroupId == (int)Group.SensorDampener && _sensorDampenerScriptAttempts < 5)
+                        {
+                            _sensorDampenerScriptAttempts++;
+                            if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "SensorDampener Found", Logging.White);
+                            scriptToLoad = Cache.Instance.CheckCargoForItem(Settings.Instance.SensorDampenerScript, 1);
+                            if (scriptToLoad != null)
+                            {
+                                if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "Script Found for SensorDampener", Logging.White);
+                                if (module.IsActive)
+                                {
+                                    module.Click();
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddSeconds(2);
+                                    return;
+                                }
+
+                                if (module.IsActive || module.IsDeactivating || module.IsChangingAmmo || module.InLimboState || module.IsGoingOnline || !module.IsOnline)
+                                {
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                                    ModuleNumber++;
+                                    continue;
+                                }
+
+                                if (!LoadthisScript(scriptToLoad, module))
+                                {
+                                    ModuleNumber++;
+                                    continue;
+                                }
+                            }
+                            ModuleNumber++;
+                            continue;
+                        }
+
+                        if (module.GroupId == (int)Group.AncillaryShieldBooster)
+                        {
+                            _ancillaryShieldBoosterAttempts++;
+                            if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "ancillaryShieldBooster Found", Logging.White);
+                            scriptToLoad = Cache.Instance.CheckCargoForItem(Settings.Instance.AncillaryShieldBoosterScript, 1);
+                            if (scriptToLoad != null)
+                            {
+                                if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "CapBoosterCharges Found for ancillaryShieldBooster", Logging.White);
+                                if (module.IsActive)
+                                {
+                                    module.Click();
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(500);
+                                    return;
+                                }
+
+                                if (module.IsActive || module.IsDeactivating || module.IsChangingAmmo || module.InLimboState || module.IsGoingOnline || !module.IsOnline)
+                                {
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                                    ModuleNumber++;
+                                    continue;
+                                }
+
+                                if (!LoadthisScript(scriptToLoad, module))
+                                {
+                                    ModuleNumber++;
+                                    continue;
+                                }
+                            }
+                            ModuleNumber++;
+                            continue;
+                        }
+
+                        if (module.GroupId == (int)Group.CapacitorInjector)
+                        {
+                            _capacitorInjectorAttempts++;
+                            if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "capacitorInjector Found", Logging.White);
+                            scriptToLoad = Cache.Instance.CheckCargoForItem(Settings.Instance.CapacitorInjectorScript, 1);
+                            if (scriptToLoad != null)
+                            {
+                                if (Settings.Instance.DebugLoadScripts) Logging.Log("Defense", "CapBoosterCharges Found for capacitorInjector", Logging.White);
+                                if (module.IsActive)
+                                {
+                                    module.Click();
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(500);
+                                    return;
+                                }
+
+                                if (module.IsActive || module.IsDeactivating || module.IsChangingAmmo || module.InLimboState || module.IsGoingOnline || !module.IsOnline)
+                                {
+                                    Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                                    ModuleNumber++;
+                                    continue;
+                                }
+
+                                if (!LoadthisScript(scriptToLoad, module))
+                                {
+                                    ModuleNumber++;
+                                    continue;
+                                }
+                            }
+                            ModuleNumber++;
+                            continue;
+                        }
+                    }
+                }
+                ModuleNumber++;
+                Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                continue;
+            }
+
             ModuleNumber = 0;
             foreach (ModuleCache module in Cache.Instance.Modules)
             {
@@ -69,13 +382,13 @@ namespace Questor.Modules.BackgroundTasks
                         }
                     }
                 }
+
                 //
-                // at this point the module should be active but isn't: activate it, set the delay and return. The process will resume on the next tick
+                // at this point the module should be active but is not: activate it, set the delay and return. The process will resume on the next tick
                 //
                 module.Click();
-                Cache.Instance.NextActivateSupportModules = DateTime.Now.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
-                Logging.Log("Defense", "Defensive module activated: [" + ModuleNumber + "] waiting [" + Math.Round(Cache.Instance.NextActivateSupportModules.Subtract(DateTime.Now).TotalSeconds, 0) + " sec]", Logging.white);
-                
+                Cache.Instance.NextActivateSupportModules = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                if (Settings.Instance.DebugDefense) Logging.Log("Defense", "Defensive module activated: [" + ModuleNumber + "]", Logging.White);
                 continue;
             }
             ModuleNumber = 0;
@@ -84,7 +397,7 @@ namespace Questor.Modules.BackgroundTasks
         private void ActivateRepairModules()
         {
             //var watch = new Stopwatch();
-            if (DateTime.Now < Cache.Instance.NextRepModuleAction) //if we just did something wait a fraction of a second
+            if (DateTime.UtcNow < Cache.Instance.NextRepModuleAction) //if we just did something wait a fraction of a second
                 return;
 
             ModuleNumber = 0;
@@ -95,7 +408,7 @@ namespace Questor.Modules.BackgroundTasks
 
                 double perc;
                 double cap;
-                if (module.GroupId == (int)Group.ShieldBoosters)
+                if (module.GroupId == (int)Group.ShieldBoosters || module.GroupId == (int)Group.AncillaryShieldBooster)
                 {
                     ModuleNumber++;
                     perc = Cache.Instance.DirectEve.ActiveShip.ShieldPercentage;
@@ -117,35 +430,51 @@ namespace Questor.Modules.BackgroundTasks
                     {
                         Cache.Instance.LowestShieldPercentageThisPocket = Cache.Instance.DirectEve.ActiveShip.ShieldPercentage;
                         Cache.Instance.LowestShieldPercentageThisMission = Cache.Instance.DirectEve.ActiveShip.ShieldPercentage;
-                        Cache.Instance.LastKnownGoodConnectedTime = DateTime.Now;
+                        Cache.Instance.LastKnownGoodConnectedTime = DateTime.UtcNow;
                     }
                     if (Cache.Instance.DirectEve.ActiveShip.ArmorPercentage < Cache.Instance.LowestArmorPercentageThisPocket)
                     {
                         Cache.Instance.LowestArmorPercentageThisPocket = Cache.Instance.DirectEve.ActiveShip.ArmorPercentage;
                         Cache.Instance.LowestArmorPercentageThisMission = Cache.Instance.DirectEve.ActiveShip.ArmorPercentage;
-                        Cache.Instance.LastKnownGoodConnectedTime = DateTime.Now;
+                        Cache.Instance.LastKnownGoodConnectedTime = DateTime.UtcNow;
                     }
                     if (Cache.Instance.DirectEve.ActiveShip.CapacitorPercentage < Cache.Instance.LowestCapacitorPercentageThisPocket)
                     {
                         Cache.Instance.LowestCapacitorPercentageThisPocket = Cache.Instance.DirectEve.ActiveShip.CapacitorPercentage;
                         Cache.Instance.LowestCapacitorPercentageThisMission = Cache.Instance.DirectEve.ActiveShip.CapacitorPercentage;
-                        Cache.Instance.LastKnownGoodConnectedTime = DateTime.Now;
+                        Cache.Instance.LastKnownGoodConnectedTime = DateTime.UtcNow;
                     }
                     if ((Cache.Instance.UnlootedContainers != null) && Cache.Instance.WrecksThisPocket != Cache.Instance.UnlootedContainers.Count())
                         Cache.Instance.WrecksThisPocket = Cache.Instance.UnlootedContainers.Count();
 
-                    module.Click();
-                    Cache.Instance.StartedBoosting = DateTime.Now;
-                    Cache.Instance.NextRepModuleAction = DateTime.Now.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
-                    if (module.GroupId == (int)Group.ShieldBoosters)
+                    if (module.GroupId == (int)Group.ShieldBoosters || module.GroupId == (int)Group.ArmorRepairer)
+                        module.Click();
+
+                    if (module.GroupId == (int)Group.AncillaryShieldBooster)
+                    {
+                        if (module.CurrentCharges > 0)
+                        {
+                            module.Click();
+                        }
+                    }
+
+                    Cache.Instance.StartedBoosting = DateTime.UtcNow;
+                    Cache.Instance.NextRepModuleAction = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                    if (module.GroupId == (int)Group.ShieldBoosters || module.GroupId == (int)Group.AncillaryShieldBooster)
                     {
                         perc = Cache.Instance.DirectEve.ActiveShip.ShieldPercentage;
-                        Logging.Log("Defense", "Shields: [" + Math.Round(perc, 0) + "%] Cap: [" + Math.Round(cap, 0) + "%] Shield Booster: [" + ModuleNumber + "] activated", Logging.white);
+                        Logging.Log("Defense", "Shields: [" + Math.Round(perc, 0) + "%] Cap: [" + Math.Round(cap, 0) + "%] Shield Booster: [" + ModuleNumber + "] activated", Logging.White);
                     }
                     else if (module.GroupId == (int)Group.ArmorRepairer)
                     {
                         perc = Cache.Instance.DirectEve.ActiveShip.ArmorPercentage;
-                        Logging.Log("Defense", "Armor: [" + Math.Round(perc, 0) + "%] Cap: [" + Math.Round(cap, 0) + "%] Armor Repairer: [" + ModuleNumber + "] activated", Logging.white);
+                        Logging.Log("Defense", "Armor: [" + Math.Round(perc, 0) + "%] Cap: [" + Math.Round(cap, 0) + "%] Armor Repairer: [" + ModuleNumber + "] activated", Logging.White);
+                        int aggressiveEntities = Cache.Instance.Entities.Count(e => e.Distance < (int)Distance.OnGridWithMe && e.IsAttacking && e.IsPlayer);
+                        if (aggressiveEntities == 0 && Cache.Instance.Entities.Count(e => e.Distance < (int)Distance.OnGridWithMe && e.IsStation) == 1)
+                        {
+                            Cache.Instance.NextDockAction = DateTime.UtcNow.AddSeconds(15);
+                            Logging.Log("Defense", "Repairing Armor outside station with no aggro (yet): delaying docking for [15]seconds", Logging.White);
+                        }
                     }
 
                     //Logging.Log("LowestShieldPercentage(pocket) [ " + Cache.Instance.lowest_shield_percentage_this_pocket + " ] ");
@@ -156,23 +485,25 @@ namespace Questor.Modules.BackgroundTasks
                     //Logging.Log("LowestCapacitorPercentage(mission) [ " + Cache.Instance.lowest_capacitor_percentage_this_mission + " ] ");
                     continue;
                 }
-                else if (module.IsActive && perc >= Settings.Instance.DeactivateRepairModules)
+
+                if (module.IsActive && perc >= Settings.Instance.DeactivateRepairModules)
                 {
                     module.Click();
-                    Cache.Instance.NextRepModuleAction = DateTime.Now.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
-                    Cache.Instance.RepairCycleTimeThisPocket = Cache.Instance.RepairCycleTimeThisPocket + ((int)DateTime.Now.Subtract(Cache.Instance.StartedBoosting).TotalSeconds);
-                    Cache.Instance.RepairCycleTimeThisMission = Cache.Instance.RepairCycleTimeThisMission + ((int)DateTime.Now.Subtract(Cache.Instance.StartedBoosting).TotalSeconds);
-                    Cache.Instance.LastKnownGoodConnectedTime = DateTime.Now;
+                    Cache.Instance.NextRepModuleAction = DateTime.UtcNow.AddMilliseconds(Time.Instance.DefenceDelay_milliseconds);
+                    Cache.Instance.RepairCycleTimeThisPocket = Cache.Instance.RepairCycleTimeThisPocket + ((int)DateTime.UtcNow.Subtract(Cache.Instance.StartedBoosting).TotalSeconds);
+                    Cache.Instance.RepairCycleTimeThisMission = Cache.Instance.RepairCycleTimeThisMission + ((int)DateTime.UtcNow.Subtract(Cache.Instance.StartedBoosting).TotalSeconds);
+                    Cache.Instance.LastKnownGoodConnectedTime = DateTime.UtcNow;
                     if (module.GroupId == (int)Group.ShieldBoosters)
                     {
                         perc = Cache.Instance.DirectEve.ActiveShip.ShieldPercentage;
-                        Logging.Log("Defense", "Shields: [" + Math.Round(perc, 0) + "%] Cap: [" + Math.Round(cap, 0) + "%] Shield Booster: [" + ModuleNumber + "] deactivated [" + Math.Round(Cache.Instance.NextRepModuleAction.Subtract(DateTime.Now).TotalSeconds, 0) + "] sec reactivation delay", Logging.white);
+                        Logging.Log("Defense", "Shields: [" + Math.Round(perc, 0) + "%] Cap: [" + Math.Round(cap, 0) + "%] Shield Booster: [" + ModuleNumber + "] deactivated [" + Math.Round(Cache.Instance.NextRepModuleAction.Subtract(DateTime.UtcNow).TotalSeconds, 0) + "] sec reactivation delay", Logging.White);
                     }
                     else if (module.GroupId == (int)Group.ArmorRepairer)
                     {
                         perc = Cache.Instance.DirectEve.ActiveShip.ArmorPercentage;
-                        Logging.Log("Defense", "Armor: [" + Math.Round(perc, 0) + "%] Cap: [" + Math.Round(cap, 0) + "%] Armor Repairer: [" + ModuleNumber + "] deactivated [" + Math.Round(Cache.Instance.NextRepModuleAction.Subtract(DateTime.Now).TotalSeconds, 0) + "] sec reactivation delay", Logging.white);
+                        Logging.Log("Defense", "Armor: [" + Math.Round(perc, 0) + "%] Cap: [" + Math.Round(cap, 0) + "%] Armor Repairer: [" + ModuleNumber + "] deactivated [" + Math.Round(Cache.Instance.NextRepModuleAction.Subtract(DateTime.UtcNow).TotalSeconds, 0) + "] sec reactivation delay", Logging.White);
                     }
+
                     //Cache.Instance.repair_cycle_time_this_pocket = Cache.Instance.repair_cycle_time_this_pocket + ((int)watch.Elapsed);
                     //Cache.Instance.repair_cycle_time_this_mission = Cache.Instance.repair_cycle_time_this_mission + watch.Elapsed.TotalMinutes;
                     continue;
@@ -182,7 +513,7 @@ namespace Questor.Modules.BackgroundTasks
 
         private void ActivateAfterburner()
         {
-            if (DateTime.Now < Cache.Instance.NextAfterburnerAction) //if we just did something wait a fraction of a second
+            if (DateTime.UtcNow < Cache.Instance.NextAfterburnerAction) //if we just did something wait a fraction of a second
                 return;
 
             ModuleNumber = 0;
@@ -190,9 +521,9 @@ namespace Questor.Modules.BackgroundTasks
             {
                 if (module.GroupId != (int)Group.Afterburner)
                     continue;
-                
+
                 ModuleNumber++;
-                
+
                 if (module.InLimboState)
                     continue;
 
@@ -203,13 +534,14 @@ namespace Questor.Modules.BackgroundTasks
                 // Should we deactivate the module?
                 bool deactivate = !Cache.Instance.IsApproaching;
                 deactivate &= module.IsActive;
-                deactivate &= ((!Cache.Instance.Entities.Any(e => e.IsAttacking) && DateTime.Now > Statistics.Instance.StartedPocket.AddSeconds(60)) || !Settings.Instance.SpeedTank);
+                deactivate &= ((!Cache.Instance.Entities.Any(e => e.IsAttacking) && DateTime.UtcNow > Statistics.Instance.StartedPocket.AddSeconds(60)) || !Settings.Instance.SpeedTank);
 
                 // This only applies when not speed tanking
                 if (!Settings.Instance.SpeedTank && Cache.Instance.IsApproachingOrOrbiting)
                 {
                     // Activate if target is far enough
                     activate &= Cache.Instance.Approaching.Distance > Settings.Instance.MinimumPropulsionModuleDistance;
+
                     // Deactivate if target is too close
                     deactivate |= Cache.Instance.Approaching.Distance < Settings.Instance.MinimumPropulsionModuleDistance;
                 }
@@ -222,12 +554,12 @@ namespace Questor.Modules.BackgroundTasks
                 if (activate && !module.IsActive)
                 {
                     module.Click();
-                    Cache.Instance.NextAfterburnerAction = DateTime.Now.AddMilliseconds(Time.Instance.AfterburnerDelay_milliseconds);
+                    Cache.Instance.NextAfterburnerAction = DateTime.UtcNow.AddMilliseconds(Time.Instance.AfterburnerDelay_milliseconds);
                 }
                 else if (deactivate && module.IsActive)
                 {
                     module.Click();
-                    Cache.Instance.NextAfterburnerAction = DateTime.Now.AddMilliseconds(Time.Instance.AfterburnerDelay_milliseconds);
+                    Cache.Instance.NextAfterburnerAction = DateTime.UtcNow.AddMilliseconds(Time.Instance.AfterburnerDelay_milliseconds);
                 }
                 return;
             }
@@ -236,30 +568,37 @@ namespace Questor.Modules.BackgroundTasks
         public void ProcessState()
         {
             // Only pulse state changes every 1.5s
-            if (DateTime.Now.Subtract(_lastPulse).TotalMilliseconds < 500) //default: 500ms
+            if (DateTime.UtcNow.Subtract(_lastPulse).TotalMilliseconds < 500) //default: 500ms
                 return;
-            _lastPulse = DateTime.Now;
+            _lastPulse = DateTime.UtcNow;
 
             // Thank god stations are safe ! :)
             if (Cache.Instance.InStation)
+            {
+                _trackingLinkScriptAttempts = 0;
+                _sensorBoosterScriptAttempts = 0;
+                _sensorDampenerScriptAttempts = 0;
+                _trackingComputerScriptAttempts = 0;
+                _trackingDisruptorScriptAttempts = 0;
                 return;
+            }
 
             if (!Cache.Instance.InSpace)
             {
-                _lastSessionChange = DateTime.Now;
+                _lastSessionChange = DateTime.UtcNow;
                 return;
             }
 
             // What? No ship entity?
-            if (Cache.Instance.DirectEve.ActiveShip.Entity == null)
+            if (Cache.Instance.DirectEve.ActiveShip.Entity == null || Cache.Instance.DirectEve.ActiveShip.GroupId == (int)Group.Capsule)
             {
-                _lastSessionChange = DateTime.Now;
+                _lastSessionChange = DateTime.UtcNow;
                 return;
             }
 
-            if (DateTime.Now.Subtract(_lastSessionChange).TotalSeconds < 7)
+            if (DateTime.UtcNow.Subtract(_lastSessionChange).TotalSeconds < 7)
             {
-                Logging.Log("Defense", "we just completed a session change less than 7 seconds ago... waiting.", Logging.white);
+                if (Settings.Instance.DebugDefense) Logging.Log("Defense", "we just completed a session change less than 7 seconds ago... waiting.", Logging.White);
                 return;
             }
 
@@ -267,7 +606,7 @@ namespace Questor.Modules.BackgroundTasks
             if (Cache.Instance.DirectEve.ActiveShip.Entity.IsCloaked)
                 return;
 
-            // Cap is SO low that we shouldn't care about hardeners/boosters as we aren't being targeted anyhow
+            // Cap is SO low that we should not care about hardeners/boosters as we are not being targeted anyhow
             if (Cache.Instance.DirectEve.ActiveShip.CapacitorPercentage < 10 && !Cache.Instance.TargetedBy.Any())
                 return;
 
@@ -276,10 +615,19 @@ namespace Questor.Modules.BackgroundTasks
 
             // this effectively disables control of speed modules when paused, which is expected behavior
             if (Cache.Instance.Paused)
+            {
                 return;
+            }
 
             if (Cache.Instance.InWarp)
+            {
+                _trackingLinkScriptAttempts = 0;
+                _sensorBoosterScriptAttempts = 0;
+                _sensorDampenerScriptAttempts = 0;
+                _trackingComputerScriptAttempts = 0;
+                _trackingDisruptorScriptAttempts = 0;
                 return;
+            }
 
             ActivateAfterburner();
         }

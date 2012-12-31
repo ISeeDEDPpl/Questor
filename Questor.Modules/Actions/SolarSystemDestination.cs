@@ -21,7 +21,7 @@ namespace Questor.Modules.Actions
 
         public SolarSystemDestination2(long solarSystemId)
         {
-            Logging.Log("QuestorManager.SolarSystemDestination", "Destination set to solar system id [" + solarSystemId + "]", Logging.white);
+            Logging.Log("QuestorManager.SolarSystemDestination", "Destination set to solar system id [" + solarSystemId + "]", Logging.White);
             SolarSystemId = solarSystemId;
         }
 
@@ -30,12 +30,12 @@ namespace Questor.Modules.Actions
             // The destination is the solar system, not the station in the solar system.
             if (Cache.Instance.DirectEve.Session.IsInStation)
             {
-                if (_nextAction < DateTime.Now)
+                if (_nextAction < DateTime.UtcNow)
                 {
-                    Logging.Log("QuestorManager.SolarSystemDestination", "Exiting station", Logging.white);
+                    Logging.Log("QuestorManager.SolarSystemDestination", "Exiting station", Logging.White);
 
                     Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.CmdExitStation);
-                    _nextAction = DateTime.Now.AddSeconds(30);
+                    _nextAction = DateTime.UtcNow.AddSeconds(30);
                 }
 
                 // We are not there yet
@@ -43,7 +43,7 @@ namespace Questor.Modules.Actions
             }
 
             // The task was to get to the solar system, we're threre :)
-            Logging.Log("QuestorManager.SolarSystemDestination", "Arrived in system", Logging.white);
+            Logging.Log("QuestorManager.SolarSystemDestination", "Arrived in system", Logging.White);
             return true;
         }
     }

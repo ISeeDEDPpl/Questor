@@ -75,7 +75,7 @@ namespace TreeSharp
 
         public override void Start(object context)
         {
-            _end = DateTime.Now + Timeout;
+            _end = DateTime.UtcNow + Timeout;
             base.Start(context);
         }
 
@@ -87,7 +87,7 @@ namespace TreeSharp
 
         public override IEnumerable<RunStatus> Execute(object context)
         {
-            while (DateTime.Now < _end)
+            while (DateTime.UtcNow < _end)
             {
                 if (Runner != null)
                 {
@@ -107,7 +107,7 @@ namespace TreeSharp
                 yield return RunStatus.Running;
             }
 
-            if (DateTime.Now < _end)
+            if (DateTime.UtcNow < _end)
             {
                 yield return RunStatus.Failure;
                 yield break;

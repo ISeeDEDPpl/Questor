@@ -44,14 +44,14 @@ namespace Questor.Modules.Lookup
         public int SwitchShipsDelay_seconds = 10;                           // Switch Ships Delay before retrying, units: seconds. Default is 10
         public int SwitchShipsCheck_seconds = 5;                            // Switch Ships Check to see if ship is correct, units: seconds. Default is 7
         public int FittingWindowLoadFittingDelay_seconds = 7;               // We can ask the fitting to be loaded using the fitting window, but we cant know it is done, thus this delay, units: seconds. Default is 10
-        public int WaitforItemstoMove_seconds = 5;                          // Arm state: wait for items to move, units: seconds. Default is 5
+        public int WaitforItemstoMove_seconds = 1;                          // Arm state: wait for items to move, units: seconds. Default is 5
         public int CheckLocalDelay_seconds = 5;                             // Local Check for bad standings pilots, delay between checks, units: seconds. Default is 5
         public int ReloadWeaponDelayBeforeUsable_seconds = 17;              // Delay after reloading before that module is usable again (non-energy weapons), units: seconds. Default is 22
         public int BookmarkPocketRetryDelay_seconds = 20;                   // When checking to see if a bookmark needs to be made in a pocket for after mission salvaging this is the delay between retries, units: seconds. Default is 20
         public int NoGateFoundRetryDelay_seconds = 30;                      // no gate found on grid when executing the activate action, wait this long to see if it appears (lag), units: seconds. Default is 30
         public int AlignDelay_minutes = 2;                                  // Delay between the last align command and the next, units: minutes. Default is 2
         public int DelayBetweenJetcans_seconds = 185;                       // Once you have made a jetcan you cannot make another for 3 minutes, units: seconds. Default is 185 (to account for lag)
-        public int SalvageStackItemsDelayBeforeResuming_seconds = 5;        // When stacking items in cargohold delay before proceeding, units: seconds. Default is 5
+        public int SalvageStackItemsDelayBeforeResuming_seconds = 2;        // When stacking items in cargohold delay before proceeding, units: seconds. Default is 5
         public int SalvageStackItems_seconds = 150;                         // When salvaging stack items in your cargo every x seconds, units: seconds. Default is 180
         public int SalvageDelayBetweenActions_milliseconds = 500;           //
         public int TravelerExitStationAmIInSpaceYet_seconds = 17;           // Traveler - Exit Station before you are in space delay, units: seconds. Default is 7
@@ -68,9 +68,10 @@ namespace Questor.Modules.Lookup
         public int NoFramesReallyRestart_seconds = 90;
         public int NoSessionIsReadyRestart_seconds = 60;
         public int NoSessionIsReadyReallyRestart_seconds = 120;
-        public int Marketlookupdelay_seconds = 3;
-        public int Marketsellorderdelay_seconds = 5;
-        public int Marketbuyorderdelay_seconds = 5;
+        public int Marketlookupdelay_seconds = 1;
+        public int Marketsellorderdelay_seconds = 2;
+        public int Marketbuyorderdelay_seconds = 2;
         public int QuestorScheduleNotUsed_Hours = 10;
+        public int SkillTrainerPulse_milliseconds = 800;
     }
 }

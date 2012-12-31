@@ -9,7 +9,7 @@ namespace Questor.Modules.States
     {
         Idle,
         Begin,
-        OpenItemHangar,
+        ReadyItemhangar,
         OpenLpStore,
         FindOffer,
         CheckPetition,

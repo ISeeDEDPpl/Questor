@@ -3,27 +3,55 @@
 <Missions>
   <bring>ItemA</bring>  <!-- will  bring an item, if item not avail, fail, halt -->
   <bringquantity>2</bringquantity> <!-- optional, only needed if you want to bring more than 1 -->
-  <trytobring>ItemB</bring> <!-- will attempt to bring, if item not avail, continue -->
-  <trytobringquantity>3</bringquantity> <!-- optional, only needed if you want to bring more than 1 -->
+  <trytobring>ItemB</trytobring> <!-- will attempt to bring, if item not avail, continue -->
+  <trytobringquantity>3</trytobringquantity> <!-- optional, only needed if you want to bring more than 1 -->
   <usedrones>false</usedrones> <!-- turn drones off for this mission if needed: false == off, true == on-->
   <weaponGroupId></weaponGroupId> <!-- if you want to use a different weapongroupID for this mission (small fast frigate?) -->
   <killSentries>true</killSentries> <!-- if set to true questor's clearpocket action will not ignore sentries -->
   <missionWarpAtDistanceRange>100</missionWarpAtDistanceRange> <!-- distance to warp to bookmark at in km (this only works 2nd through nth times, 1st time you will warpto 0 -->
   <pockets>
     <pocket id="0">
+      <action name="LogWhatIsOnGrid"></action> <!-- logs the details of all on grid entities to the console log -->
+
       <action name="MoveTo"> <!-- initiate movement to the "target" and fight only those NPCs that target you while you are on the way, process no other actions until you reach the target-->
         <parameter name="Target">Acceleration Gate</parameter>
-        <parameter name="Distance" value="5000"></parameter>
+        <parameter name="Distance" value="0"></parameter>
+        <parameter name="StopWhenTargeted" value="false"></parameter>
+        <parameter name="StopWhenAggressed" value="false"></parameter>
       </action>
+      
+	  <action name="orbitdistance">20000</action> <!-- per pocket orbit distance if you choose to change it -->
+	  
+      <action name="OrbitEntityNamed"> <!-- orbits the Entity with this name -->
+        <parameter name="Target">Beacon</parameter>
+        <parameter name="NotClosest" value="true"></parameter>
+      </action> 
+	  
       <action name="MoveToBackground"> <!-- initiate movement to to the "target" and move on to the next action, using this action assumes that the actions used after this will not move the ship as we likely need to stay moving toward the target-->
         <parameter name="Target">Acceleration Gate</parameter>
-        <parameter name="Distance" value="5000"></parameter>
+        <parameter name="Distance" value="0"></parameter>
       </action>
+
       <action name="WaitUntilTargeted"> <!-- wait this # of seconds before proceeding to the next action (basically a pause for NPCs to spawn)-->
         <parameter name="Timeout" value="15"></parameter>
       </action>
-      <action name="ClearPocket"></action> <!-- This is a commonly used action that clears the pocket of NPCs -->
-      <action name="ClearWithinWeaponsRangeOnly"></action> <!-- This is used in combination with MoveToBackground, only NPCs in weapons range will be killed/cleared, because of the nature of this command no movement commands are given to the ship, you only kill what is in range thus you may need to add a regular clearpocket after this command to cleanup anything possibly out of range -->
+
+      <action name="ClearPocket">  <!-- This is a commonly used action that clears the pocket of NPCs -->
+		<parameter name="distance">30000</parameter> <!-- default distance is your maxRange, use this if you only want to clear aggro within 30k -->
+	  </action>
+
+      <action name="ClearAggro">
+		<parameter name="distance">30000</parameter> <!-- default distance is your maxRange, use this if you only want to clear aggro within 30k -->
+	  </action>  <!-- action that clears the pocket of NPCs that are targeting us (aggro) -->
+
+	  <action name="ClearWithinWeaponsRangeOnly">
+		<parameter name="distance">30000</parameter> <!-- default distance is your maxRange, use this if you only want to clear aggro within 30k -->
+	  </action> <!-- This is used in combination with MoveToBackground, only NPCs in weapons range will be killed/cleared, because of the nature of this command no movement commands are given to the ship, you only kill what is in range thus you may need to add a regular clearpocket after this command to cleanup anything possibly out of range -->
+
+      <action name="ClearWithinWeaponsRangeAggroOnly"> <!-- This is used in combination with MoveToBackground, only NPCs in weapons range who are targeting us will be killed/cleared, because of the nature of this command no movement commands are given to the ship, you only kill what is in range thus you may need to add a regular clearpocket after this command to cleanup anything possibly out of range -->
+	  	<parameter name="distance">30000</parameter> <!-- default distance is your maxRange, use this if you only want to clear aggro within 30k -->
+	  </action> 
+
       <action name="AggroOnly">
         <parameter name="IgnoreAttackers" value="true"></parameter>
         <parameter name="BreakOnAttackers" value="true"></parameter>
@@ -31,47 +59,75 @@
         <parameter name="NumberToIgnore" value="50"></parameter>
         <parameter name="Target" value="Dim"></parameter>
       </action>
-      <action name="Kill">
+      
+	  <action name="Kill">
         <parameter name="IgnoreAttackers" value="true"></parameter>
         <parameter name="BreakOnAttackers" value="true"></parameter>
         <parameter name="NotClosest" value="true"></parameter>
         <parameter name="NumberToIgnore" value="50"></parameter>
         <parameter name="Target" value="Dim"></parameter>
       </action>
-      <action name="KillOnce">
+      
+	  <action name="KillOnce">
         <parameter name="IgnoreAttackers" value="true"></parameter>
         <parameter name="BreakOnAttackers" value="true"></parameter>
         <parameter name="NotClosest" value="true"></parameter>
         <parameter name="NumberToIgnore" value="50"></parameter>
         <parameter name="Target" value="Dim"></parameter>
       </action>
-      <action name="UseDrones">
+      
+	  <action name="UseDrones">
         <parameter name="Use" value="true"></parameter>
       </action>
-      <action name="KillClosestByName">
+      
+	  <action name="KillClosestByName">
         <parameter name="NotClosest" value="true"></parameter>
         <parameter name="Target" value="Dim"></parameter>
       </action>
-      <action name="KillClosest">
+      
+	  <action name="KillClosest">
         <parameter name="NotClosest" value="true"></parameter>
         <parameter name="Target" value="Dim"></parameter>
       </action>
-      <action name="Ignore">
+      
+	  <action name="Ignore">
         <parameter name="Clear" value="true"></parameter>
         <parameter name="Add" value="Dim"></parameter>
         <parameter name="Remove" value="Dim"></parameter>
       </action>
-      <action name="Loot">
+      
+	  <action name="Loot"> <!-- this loots the field if LootEverything is true, if False it only loots item below then moves on --> 
         <parameter name="Item" value="DimsIsk"></parameter>
         <parameter name="Target" value="Dim"></parameter>
       </action>
-      <action name="LootItem">
+      
+	  <action name="LootItem"> <!-- this looks in a specific container for a specific item potentially saving ALOT of time because it does not necessarily have to "loot the field" to find the item -->
         <parameter name="Item" value="DimsIsk"></parameter>
         <parameter name="Target" value="Dim"></parameter>
         <parameter name="Quantity" value="30"></parameter>
       </action>
-      <action name="Done"></action>
+      
+	  <action name="DropItem"> <!--  this puts a specific item (in your cargo already) into the target container -->
+        <parameter name="Item" value="DimsIsk"></parameter>
+        <parameter name="Target" value="Dim"></parameter>
+        <parameter name="Quantity" value="30"></parameter>
+      </action>
+	  
+	  <action name="DebuggingWait"> <!-- literally only used for debugging: allows you to put in a LONG wait (in seconds) if needed: default is 1200 seconds, Questor WILL shoot things as it waits it just wont be processing any mission actions -->
+		  <parameter name="timeout" value="1200"></parameter>
+	  </action> 
+	  
+	  <action name="Done"></action> <!-- end of mission: gotobase -->
+	  
 	  <action name="SalvageBookmark"></action>
+	  
+	  <action name="Activate">
+		<parameter name="optional" value="false"></parameter> <!-- if true and we cant find the target to avtivate we assume the mission is done -->
+		<parameter name="target" value="Acceleration Gate"></parameter>
+	  </action>
     </pocket>
+	<pocket id="1">
+		<!-- next pocket (if needed)-->
+	</pocket>
   </pockets>
 </Missions>

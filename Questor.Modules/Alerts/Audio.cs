@@ -14,7 +14,7 @@ namespace Questor.Modules.Alerts
     public class Audio : System.Windows.Forms.Form
     {
         private System.Windows.Forms.Label _label1;
-        private System.Windows.Forms.TextBox _filepathTextbox;        
+        private System.Windows.Forms.TextBox _filepathTextbox;
         private System.Windows.Forms.Button _playOnceSyncButton;
         private System.Windows.Forms.Button _playOnceAsyncButton;
         private System.Windows.Forms.Button _playLoopAsyncButton;
@@ -23,7 +23,7 @@ namespace Questor.Modules.Alerts
         private System.Windows.Forms.Button _stopButton;
         private System.Windows.Forms.StatusBar _statusBar;
         private System.Windows.Forms.Button _loadSyncButton;
-        private System.Windows.Forms.Button _loadAsyncButton;        
+        private System.Windows.Forms.Button _loadAsyncButton;
         private SoundPlayer _player;
         //private Audio _localalarm;
         //private string _localalarmmp3 = "test.mp3";
@@ -36,8 +36,8 @@ namespace Questor.Modules.Alerts
         {
             // Initialize Forms Designer generated code.
             InitializeComponent();
-			
-            // Disable playback controls until a valid .wav file 
+
+            // Disable playback controls until a valid .wav file
             // is selected.
             EnablePlaybackControls(false);
 
@@ -73,13 +73,13 @@ namespace Questor.Modules.Alerts
             _player.SoundLocationChanged += new EventHandler(player_LocationChanged);
         }
 
-        private void selectFileButton_Click(object sender, 
+        private void selectFileButton_Click(object sender,
             System.EventArgs e)
         {
             // Create a new OpenFileDialog.
             OpenFileDialog dlg = new OpenFileDialog();
 
-            // Make sure the dialog checks for existence of the 
+            // Make sure the dialog checks for existence of the
             // selected file.
             dlg.CheckFileExists = true;
 
@@ -93,13 +93,13 @@ namespace Questor.Modules.Alerts
                 // Get the selected file's path from the dialog.
                 this._filepathTextbox.Text = dlg.FileName;
 
-                // Assign the selected file's path to 
-                // the SoundPlayer object.  
+                // Assign the selected file's path to
+                // the SoundPlayer object.
                 _player.SoundLocation = _filepathTextbox.Text;
             }
         }
 
-        // Convenience method for setting message text in 
+        // Convenience method for setting message text in
         // the status bar.
         private void ReportStatus(string statusMessage)
         {
@@ -113,32 +113,32 @@ namespace Questor.Modules.Alerts
 
         // Enables and disables play controls.
         private void EnablePlaybackControls(bool enabled)
-        {   
+        {
             this._playOnceSyncButton.Enabled = enabled;
             this._playOnceAsyncButton.Enabled = enabled;
             this._playLoopAsyncButton.Enabled = enabled;
             this._stopButton.Enabled = enabled;
         }
 
-        private void filepathTextbox_TextChanged(object sender, 
+        private void filepathTextbox_TextChanged(object sender,
             EventArgs e)
         {
             // Disable playback controls until the new .wav is loaded.
             EnablePlaybackControls(false);
         }
 
-        private void loadSyncButton_Click(object sender, 
+        private void loadSyncButton_Click(object sender,
             System.EventArgs e)
-        {   
-            // Disable playback controls until the .wav is 
-            // successfully loaded. The LoadCompleted event 
+        {
+            // Disable playback controls until the .wav is
+            // successfully loaded. The LoadCompleted event
             // handler will enable them.
             EnablePlaybackControls(false);
 
             try
             {
-                // Assign the selected file's path to 
-                // the SoundPlayer object.  
+                // Assign the selected file's path to
+                // the SoundPlayer object.
                 _player.SoundLocation = _filepathTextbox.Text;
 
                 // Load the .wav file.
@@ -150,18 +150,18 @@ namespace Questor.Modules.Alerts
             }
         }
 
-        private void loadAsyncButton_Click(System.Object sender, 
+        private void loadAsyncButton_Click(System.Object sender,
             System.EventArgs e)
         {
-            // Disable playback controls until the .wav is 
-            // successfully loaded. The LoadCompleted event 
+            // Disable playback controls until the .wav is
+            // successfully loaded. The LoadCompleted event
             // handler will enable them.
             EnablePlaybackControls(false);
 
             try
             {
-                // Assign the selected file's path to 
-                // the SoundPlayer object.  
+                // Assign the selected file's path to
+                // the SoundPlayer object.
                 _player.SoundLocation = this._filepathTextbox.Text;
 
                 // Load the .wav file.
@@ -174,18 +174,18 @@ namespace Questor.Modules.Alerts
         }
 
         // Synchronously plays the selected .wav file once.
-        // If the file is large, UI response will be visibly 
+        // If the file is large, UI response will be visibly
         // affected.
-        private void playOnceSyncButton_Click(object sender, 
+        private void playOnceSyncButton_Click(object sender,
             System.EventArgs e)
-        {	
+        {
             ReportStatus("Playing .wav file synchronously.");
             _player.PlaySync();
             ReportStatus("Finished playing .wav file synchronously.");
         }
 
         // Asynchronously plays the selected .wav file once.
-        private void playOnceAsyncButton_Click(object sender, 
+        private void playOnceAsyncButton_Click(object sender,
             System.EventArgs e)
         {
             ReportStatus("Playing .wav file asynchronously.");
@@ -194,7 +194,7 @@ namespace Questor.Modules.Alerts
 
         // Asynchronously plays the selected .wav file until the user
         // clicks the Stop button.
-        private void playLoopAsyncButton_Click(object sender, 
+        private void playLoopAsyncButton_Click(object sender,
             System.EventArgs e)
         {
             ReportStatus("Looping .wav file asynchronously.");
@@ -204,16 +204,16 @@ namespace Questor.Modules.Alerts
         // Stops the currently playing .wav file, if any.
         private void stopButton_Click(System.Object sender,
             System.EventArgs e)
-        {	
+        {
             _player.Stop();
             ReportStatus("Stopped by user.");
         }
 
         // Handler for the LoadCompleted event.
-        private void player_LoadCompleted(object sender, 
+        private void player_LoadCompleted(object sender,
             AsyncCompletedEventArgs e)
-        {   
-            string message = String.Format("LoadCompleted: {0}", 
+        {
+            string message = String.Format("LoadCompleted: {0}",
                 this._filepathTextbox.Text);
             ReportStatus(message);
             EnablePlaybackControls(true);
@@ -221,8 +221,8 @@ namespace Questor.Modules.Alerts
 
         // Handler for the SoundLocationChanged event.
         private void player_LocationChanged(object sender, EventArgs e)
-        {   
-            string message = String.Format("SoundLocationChanged: {0}", 
+        {
+            string message = String.Format("SoundLocationChanged: {0}",
                 _player.SoundLocation);
             ReportStatus(message);
         }
@@ -249,9 +249,9 @@ namespace Questor.Modules.Alerts
             this._statusBar = new System.Windows.Forms.StatusBar();
             this._loadAsyncButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
-            // 
+            //
             // _filepathTextbox
-            // 
+            //
             this._filepathTextbox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this._filepathTextbox.Location = new System.Drawing.Point(7, 25);
@@ -259,9 +259,9 @@ namespace Questor.Modules.Alerts
             this._filepathTextbox.Size = new System.Drawing.Size(263, 20);
             this._filepathTextbox.TabIndex = 1;
             this._filepathTextbox.TextChanged += new System.EventHandler(this.filepathTextbox_TextChanged);
-            // 
+            //
             // _selectFileButton
-            // 
+            //
             this._selectFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this._selectFileButton.Location = new System.Drawing.Point(276, 25);
             this._selectFileButton.Name = "_selectFileButton";
@@ -269,62 +269,62 @@ namespace Questor.Modules.Alerts
             this._selectFileButton.TabIndex = 2;
             this._selectFileButton.Text = "...";
             this._selectFileButton.Click += new System.EventHandler(this.selectFileButton_Click);
-            // 
+            //
             // _label1
-            // 
+            //
             this._label1.Location = new System.Drawing.Point(7, 7);
             this._label1.Name = "_label1";
             this._label1.Size = new System.Drawing.Size(145, 17);
             this._label1.TabIndex = 3;
             this._label1.Text = ".wav path or URL:";
-            // 
+            //
             // _loadSyncButton
-            // 
+            //
             this._loadSyncButton.Location = new System.Drawing.Point(7, 53);
             this._loadSyncButton.Name = "_loadSyncButton";
             this._loadSyncButton.Size = new System.Drawing.Size(142, 23);
             this._loadSyncButton.TabIndex = 4;
             this._loadSyncButton.Text = "Load Synchronously";
             this._loadSyncButton.Click += new System.EventHandler(this.loadSyncButton_Click);
-            // 
+            //
             // _playOnceSyncButton
-            // 
+            //
             this._playOnceSyncButton.Location = new System.Drawing.Point(7, 86);
             this._playOnceSyncButton.Name = "_playOnceSyncButton";
             this._playOnceSyncButton.Size = new System.Drawing.Size(142, 23);
             this._playOnceSyncButton.TabIndex = 5;
             this._playOnceSyncButton.Text = "Play Once Synchronously";
             this._playOnceSyncButton.Click += new System.EventHandler(this.playOnceSyncButton_Click);
-            // 
+            //
             // _playOnceAsyncButton
-            // 
+            //
             this._playOnceAsyncButton.Location = new System.Drawing.Point(149, 86);
             this._playOnceAsyncButton.Name = "_playOnceAsyncButton";
             this._playOnceAsyncButton.Size = new System.Drawing.Size(147, 23);
             this._playOnceAsyncButton.TabIndex = 6;
             this._playOnceAsyncButton.Text = "Play Once Asynchronously";
             this._playOnceAsyncButton.Click += new System.EventHandler(this.playOnceAsyncButton_Click);
-            // 
+            //
             // _stopButton
-            // 
+            //
             this._stopButton.Location = new System.Drawing.Point(149, 109);
             this._stopButton.Name = "_stopButton";
             this._stopButton.Size = new System.Drawing.Size(147, 23);
             this._stopButton.TabIndex = 7;
             this._stopButton.Text = "Stop";
             this._stopButton.Click += new System.EventHandler(this.stopButton_Click);
-            // 
+            //
             // _playLoopAsyncButton
-            // 
+            //
             this._playLoopAsyncButton.Location = new System.Drawing.Point(7, 109);
             this._playLoopAsyncButton.Name = "_playLoopAsyncButton";
             this._playLoopAsyncButton.Size = new System.Drawing.Size(142, 23);
             this._playLoopAsyncButton.TabIndex = 8;
             this._playLoopAsyncButton.Text = "Loop Asynchronously";
             this._playLoopAsyncButton.Click += new System.EventHandler(this.playLoopAsyncButton_Click);
-            // 
+            //
             // _statusBar
-            // 
+            //
             this._statusBar.Location = new System.Drawing.Point(0, 146);
             this._statusBar.Name = "_statusBar";
             this._statusBar.Size = new System.Drawing.Size(306, 22);
@@ -332,18 +332,18 @@ namespace Questor.Modules.Alerts
             this._statusBar.TabIndex = 9;
             this._statusBar.Text = "(no status)";
             this._statusBar.PanelClick += new System.Windows.Forms.StatusBarPanelClickEventHandler(this._statusBar_PanelClick);
-            // 
+            //
             // _loadAsyncButton
-            // 
+            //
             this._loadAsyncButton.Location = new System.Drawing.Point(149, 53);
             this._loadAsyncButton.Name = "_loadAsyncButton";
             this._loadAsyncButton.Size = new System.Drawing.Size(147, 23);
             this._loadAsyncButton.TabIndex = 10;
             this._loadAsyncButton.Text = "Load Asynchronously";
             this._loadAsyncButton.Click += new System.EventHandler(this.loadAsyncButton_Click);
-            // 
+            //
             // Audio
-            // 
+            //
             this.ClientSize = new System.Drawing.Size(306, 168);
             this.Controls.Add(this._loadAsyncButton);
             this.Controls.Add(this._statusBar);

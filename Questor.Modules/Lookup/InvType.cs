@@ -47,7 +47,9 @@ namespace Questor.Modules.Lookup
             LastUpdate = (DateTime?)element.Attribute("lastupdate");
             Reprocess = new Dictionary<string, double?>();
             foreach (string m in Minerals)
-                Reprocess.Add(m, (double?)element.Attribute(m));
+            {
+                Reprocess.Add(m, (double?) element.Attribute(m));
+            }
         }
 
         public InvType(ItemCache item)
@@ -62,7 +64,9 @@ namespace Questor.Modules.Lookup
             LastUpdate = DateTime.MinValue;
             Reprocess = new Dictionary<string, double?>();
             foreach (string m in Minerals)
+            {
                 Reprocess.Add(m, null);
+            }
         }
 
         public int Id { get; set; }

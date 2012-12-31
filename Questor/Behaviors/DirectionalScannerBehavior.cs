@@ -9,7 +9,6 @@
 // -------------------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,36 +28,29 @@ namespace Questor.Behaviors
     {
         private readonly Arm _arm;
         private readonly Combat _combat;
-        //private readonly Defense _defense;
         private readonly Drones _drones;
 
-        private DateTime _lastPulse;
         private readonly Panic _panic;
         private readonly Salvage _salvage;
-        private readonly Traveler _traveler;
-        private readonly UnloadLoot _unloadLoot;
         public DateTime LastAction;
-        private readonly Random _random;
-        //private int _randomDelay;
         public static long AgentID;
         private readonly Stopwatch _watch;
 
-        public bool Panicstatereset; //false;
+        public bool PanicstateReset; //false;
+
         private bool ValidSettings { get; set; }
-        public bool CloseQuestorflag = true;
+
+        public bool CloseQuestorFlag = true;
+
         public string CharacterName { get; set; }
 
-        //DateTime _nextAction = DateTime.Now;
+        //DateTime _nextAction = DateTime.UtcNow;
 
         public DirectionalScannerBehavior()
         {
-            _lastPulse = DateTime.Now;
-            _random = new Random();
             _salvage = new Salvage();
             _combat = new Combat();
             _drones = new Drones();
-            _traveler = new Traveler();
-            _unloadLoot = new UnloadLoot();
             _arm = new Arm();
             _panic = new Panic();
             _watch = new Stopwatch();
@@ -67,13 +59,8 @@ namespace Questor.Behaviors
             // this is combat mission specific and needs to be generalized
             //
             Settings.Instance.SettingsLoaded += SettingsLoaded;
-            //Settings.Instance.UseFittingManager = false;
-
-            // States.CurrentDirectionalScannerBehaviorState fixed on ExecuteMission
             _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Idle;
             _States.CurrentArmState = ArmState.Idle;
-            //_States.CurrentCombatState = CombatState.Idle;
-            //_States.CurrentDroneState = DroneState.Idle;
             _States.CurrentUnloadLootState = UnloadLootState.Idle;
             _States.CurrentTravelerState = TravelerState.Idle;
         }
@@ -87,13 +74,13 @@ namespace Questor.Behaviors
         public void DebugDirectionalScannerBehaviorStates()
         {
             if (Settings.Instance.DebugStates)
-                Logging.Log("DirectionalScannerBehavior.State is", _States.CurrentDirectionalScannerBehaviorState.ToString(), Logging.white);
+                Logging.Log("DirectionalScannerBehavior.State is", _States.CurrentDirectionalScannerBehaviorState.ToString(), Logging.White);
         }
 
         public void DebugPanicstates()
         {
             if (Settings.Instance.DebugStates)
-                Logging.Log("Panic.State is ", _States.CurrentPanicState.ToString(), Logging.white);
+                Logging.Log("Panic.State is ", _States.CurrentPanicState.ToString(), Logging.White);
         }
 
         public void DebugPerformanceClearandStartTimer()
@@ -106,7 +93,7 @@ namespace Questor.Behaviors
         {
             _watch.Stop();
             if (Settings.Instance.DebugPerformance)
-                Logging.Log(whatWeAreTiming, " took " + _watch.ElapsedMilliseconds + "ms", Logging.white);
+                Logging.Log(whatWeAreTiming, " took " + _watch.ElapsedMilliseconds + "ms", Logging.White);
         }
 
         public void ValidateCombatMissionSettings()
@@ -114,16 +101,16 @@ namespace Questor.Behaviors
             ValidSettings = true;
             if (Settings.Instance.Ammo.Select(a => a.DamageType).Distinct().Count() != 4)
             {
-                if (!Settings.Instance.Ammo.Any(a => a.DamageType == DamageType.EM))
-                    Logging.Log("Settings", ": Missing EM damage type!", Logging.orange);
-                if (!Settings.Instance.Ammo.Any(a => a.DamageType == DamageType.Thermal))
-                    Logging.Log("Settings", "Missing Thermal damage type!", Logging.orange);
-                if (!Settings.Instance.Ammo.Any(a => a.DamageType == DamageType.Kinetic))
-                    Logging.Log("Settings", "Missing Kinetic damage type!", Logging.orange);
-                if (!Settings.Instance.Ammo.Any(a => a.DamageType == DamageType.Explosive))
-                    Logging.Log("Settings", "Missing Explosive damage type!", Logging.orange);
+                if (Settings.Instance.Ammo.All(a => a.DamageType != DamageType.EM))
+                    Logging.Log("Settings", ": Missing EM damage type!", Logging.Orange);
+                if (Settings.Instance.Ammo.All(a => a.DamageType != DamageType.Thermal))
+                    Logging.Log("Settings", "Missing Thermal damage type!", Logging.Orange);
+                if (Settings.Instance.Ammo.All(a => a.DamageType != DamageType.Kinetic))
+                    Logging.Log("Settings", "Missing Kinetic damage type!", Logging.Orange);
+                if (Settings.Instance.Ammo.All(a => a.DamageType != DamageType.Explosive))
+                    Logging.Log("Settings", "Missing Explosive damage type!", Logging.Orange);
 
-                Logging.Log("Settings", "You are required to specify all 4 damage types in your settings xml file!", Logging.white);
+                Logging.Log("Settings", "You are required to specify all 4 damage types in your settings xml file!", Logging.White);
                 ValidSettings = false;
             }
 
@@ -131,7 +118,7 @@ namespace Questor.Behaviors
 
             if (agent == null || !agent.IsValid)
             {
-                Logging.Log("Settings", "Unable to locate agent [" + Cache.Instance.CurrentAgent + "]", Logging.white);
+                Logging.Log("Settings", "Unable to locate agent [" + Cache.Instance.CurrentAgent + "]", Logging.White);
                 ValidSettings = false;
             }
             else
@@ -151,44 +138,8 @@ namespace Questor.Behaviors
 
         private void BeginClosingQuestor()
         {
-            Cache.Instance.EnteredCloseQuestor_DateTime = DateTime.Now;
+            Cache.Instance.EnteredCloseQuestor_DateTime = DateTime.UtcNow;
             _States.CurrentQuestorState = QuestorState.CloseQuestor;
-        }
-
-        private void TravelToAgentsStation()
-        {
-            try
-            {
-                var baseDestination = _traveler.Destination as StationDestination;
-                if (baseDestination == null || baseDestination.StationId != Cache.Instance.Agent.StationId)
-                    _traveler.Destination = new StationDestination(Cache.Instance.Agent.SolarSystemId,
-                                                                   Cache.Instance.Agent.StationId,
-                                                                   Cache.Instance.DirectEve.GetLocationName(
-                                                                       Cache.Instance.Agent.StationId));
-            }
-            catch (Exception ex)
-            {
-                Logging.Log("DirectionalScanner", "TravelToAgentsStation: Exception caught: [" + ex.Message + "]", Logging.red);
-                return;
-            }
-            if (Cache.Instance.InSpace)
-            {
-                if (!Cache.Instance.DirectEve.ActiveShip.Entity.IsCloaked || (Cache.Instance.LastSessionChange.AddSeconds(60) > DateTime.Now))
-                {
-                    _combat.ProcessState();
-                    _drones.ProcessState(); //do we really want to use drones here?
-                }
-            }
-            if (Cache.Instance.InSpace && !Cache.Instance.TargetedBy.Any(t => t.IsWarpScramblingMe))
-            {
-                Cache.Instance.IsMissionPocketDone = true; //tells drones.cs that we can pull drones
-                //Logging.Log("CombatmissionBehavior","TravelToAgentStation: not pointed",Logging.white);
-            }
-            _traveler.ProcessState();
-            if (Settings.Instance.DebugStates)
-            {
-                Logging.Log("Traveler.State", "is " + _States.CurrentTravelerState, Logging.white);
-            }
         }
 
         public void ProcessState()
@@ -196,10 +147,10 @@ namespace Questor.Behaviors
             // Invalid settings, quit while we're ahead
             if (!ValidSettings)
             {
-                if (DateTime.Now.Subtract(LastAction).TotalSeconds < Time.Instance.ValidateSettings_seconds) //default is a 15 second interval
+                if (DateTime.UtcNow.Subtract(LastAction).TotalSeconds < Time.Instance.ValidateSettings_seconds) //default is a 15 second interval
                 {
                     ValidateCombatMissionSettings();
-                    LastAction = DateTime.Now;
+                    LastAction = DateTime.UtcNow;
                 }
                 return;
             }
@@ -216,15 +167,13 @@ namespace Questor.Behaviors
                     var station = Cache.Instance.Stations.OrderBy(x => x.Distance).FirstOrDefault();
                     if (station != null)
                     {
-                        Logging.Log("Local not safe", "Station found. Going to nearest station", Logging.white);
-                        if (_States.CurrentDirectionalScannerBehaviorState != DirectionalScannerBehaviorState.GotoNearestStation)
-                            _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.GotoNearestStation;
+                        Logging.Log("Local not safe", "Station found. Going to nearest station", Logging.White);
+                        _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.GotoNearestStation;
                     }
                     else
                     {
-                        Logging.Log("Local not safe", "Station not found. Going back to base", Logging.white);
-                        if (_States.CurrentDirectionalScannerBehaviorState != DirectionalScannerBehaviorState.GotoBase)
-                            _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.GotoBase;
+                        Logging.Log("Local not safe", "Station not found. Going back to base", Logging.White);
+                        _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.GotoBase;
                     }
                     Cache.Instance.StopBot = true;
                 }
@@ -237,13 +186,10 @@ namespace Questor.Behaviors
 
             if (Cache.Instance.GotoBaseNow)
             {
-                if (_States.CurrentDirectionalScannerBehaviorState != DirectionalScannerBehaviorState.GotoBase)
-                {
-                    _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.GotoBase;
-                }
+                _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.GotoBase;
             }
 
-            if ((DateTime.Now.Subtract(Cache.Instance.QuestorStarted_DateTime).TotalSeconds > 10) && (DateTime.Now.Subtract(Cache.Instance.QuestorStarted_DateTime).TotalSeconds < 60))
+            if ((DateTime.UtcNow.Subtract(Cache.Instance.QuestorStarted_DateTime).TotalSeconds > 10) && (DateTime.UtcNow.Subtract(Cache.Instance.QuestorStarted_DateTime).TotalSeconds < 60))
             {
                 if (Cache.Instance.QuestorJustStarted)
                 {
@@ -267,10 +213,10 @@ namespace Questor.Behaviors
                 _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Panic;
 
                 DebugDirectionalScannerBehaviorStates();
-                if (Panicstatereset)
+                if (PanicstateReset)
                 {
                     _States.CurrentPanicState = PanicState.Normal;
-                    Panicstatereset = false;
+                    PanicstateReset = false;
                 }
             }
             else if (_States.CurrentPanicState == PanicState.Resume)
@@ -293,11 +239,11 @@ namespace Questor.Behaviors
 
                     if (Cache.Instance.StopBot)
                     {
-                        if (Settings.Instance.DebugIdle) Logging.Log("DirectionalScannerBehavior", "if (Cache.Instance.StopBot)", Logging.white);
+                        if (Settings.Instance.DebugIdle) Logging.Log("DirectionalScannerBehavior", "if (Cache.Instance.StopBot)", Logging.White);
                         return;
                     }
 
-                    if (Settings.Instance.DebugIdle) Logging.Log("DirectionalScannerBehavior", "if (Cache.Instance.InSpace) else", Logging.white);
+                    if (Settings.Instance.DebugIdle) Logging.Log("DirectionalScannerBehavior", "if (Cache.Instance.InSpace) else", Logging.White);
                     _States.CurrentArmState = ArmState.Idle;
                     _States.CurrentDroneState = DroneState.Idle;
                     _States.CurrentSalvageState = SalvageState.Idle;
@@ -305,36 +251,36 @@ namespace Questor.Behaviors
                     _States.CurrentUnloadLootState = UnloadLootState.Idle;
                     _States.CurrentTravelerState = TravelerState.Idle;
 
-                    Logging.Log("DirectionalScannerBehavior", "Started questor in Directional Scanner (test) mode", Logging.white);
-                    LastAction = DateTime.Now;
+                    Logging.Log("DirectionalScannerBehavior", "Started questor in Directional Scanner (test) mode", Logging.White);
+                    LastAction = DateTime.UtcNow;
                     break;
 
                 case DirectionalScannerBehaviorState.DelayedGotoBase:
-                    if (DateTime.Now.Subtract(LastAction).TotalSeconds < Time.Instance.DelayedGotoBase_seconds)
+                    if (DateTime.UtcNow.Subtract(LastAction).TotalSeconds < Time.Instance.DelayedGotoBase_seconds)
                         break;
 
-                    Logging.Log("DirectionalScannerBehavior", "Heading back to base", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "Heading back to base", Logging.White);
                     if (_States.CurrentDirectionalScannerBehaviorState == DirectionalScannerBehaviorState.DelayedGotoBase) _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.GotoBase;
                     break;
 
                 case DirectionalScannerBehaviorState.GotoBase:
-                    if (Settings.Instance.DebugGotobase) Logging.Log("DirectionalScannerBehavior", "GotoBase: AvoidBumpingThings()", Logging.white);
+                    if (Settings.Instance.DebugGotobase) Logging.Log("DirectionalScannerBehavior", "GotoBase: AvoidBumpingThings()", Logging.White);
 
                     NavigateOnGrid.AvoidBumpingThings(Cache.Instance.BigObjects.FirstOrDefault(), "DirectionalScannerBehaviorState.GotoBase");
 
-                    if (Settings.Instance.DebugGotobase) Logging.Log("DirectionalScannerBehavior", "GotoBase: TravelToAgentsStation()", Logging.white);
+                    if (Settings.Instance.DebugGotobase) Logging.Log("DirectionalScannerBehavior", "GotoBase: Traveler.TravelHome()", Logging.White);
 
-                    TravelToAgentsStation();
+                    Traveler.TravelHome("DirectionalScannerBehavior");
 
-                    if (_States.CurrentTravelerState == TravelerState.AtDestination) // || DateTime.Now.Subtract(Cache.Instance.EnteredCloseQuestor_DateTime).TotalMinutes > 10)
+                    if (_States.CurrentTravelerState == TravelerState.AtDestination) // || DateTime.UtcNow.Subtract(Cache.Instance.EnteredCloseQuestor_DateTime).TotalMinutes > 10)
                     {
-                        if (Settings.Instance.DebugGotobase) Logging.Log("DirectionalScannerBehavior", "GotoBase: We are at destination", Logging.white);
+                        if (Settings.Instance.DebugGotobase) Logging.Log("DirectionalScannerBehavior", "GotoBase: We are at destination", Logging.White);
                         Cache.Instance.GotoBaseNow = false; //we are there - turn off the 'forced' gotobase
-                        Cache.Instance.Mission = Cache.Instance.GetAgentMission(AgentID);
+                        Cache.Instance.Mission = Cache.Instance.GetAgentMission(AgentID, false);
 
                         if (_States.CurrentDirectionalScannerBehaviorState == DirectionalScannerBehaviorState.GotoBase) _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Idle;
 
-                        _traveler.Destination = null;
+                        Traveler.Destination = null;
                     }
                     break;
 
@@ -343,56 +289,56 @@ namespace Questor.Behaviors
                     List<long> destination = Cache.Instance.DirectEve.Navigation.GetDestinationPath();
                     if (destination == null || destination.Count == 0)
                     {
-                        // happens if autopilot isn't set and this questorstate is chosen manually
+                        // happens if autopilot is not set and this QuestorState is chosen manually
                         // this also happens when we get to destination (!?)
-                        Logging.Log("DirectionalScannerBehavior.Traveler", "No destination?", Logging.white);
+                        Logging.Log("DirectionalScannerBehavior.Traveler", "No destination?", Logging.White);
                         if (_States.CurrentDirectionalScannerBehaviorState == DirectionalScannerBehaviorState.Traveler) _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Error;
                         return;
                     }
-                    else
-                        if (destination.Count == 1 && destination.First() == 0)
-                            destination[0] = Cache.Instance.DirectEve.Session.SolarSystemId ?? -1;
-                    if (_traveler.Destination == null || _traveler.Destination.SolarSystemId != destination.Last())
+
+                    if (destination.Count == 1 && destination.FirstOrDefault() == 0)
+                        destination[0] = Cache.Instance.DirectEve.Session.SolarSystemId ?? -1;
+                    if (Traveler.Destination == null || Traveler.Destination.SolarSystemId != destination.LastOrDefault())
                     {
-                        IEnumerable<DirectBookmark> bookmarks = Cache.Instance.DirectEve.Bookmarks.Where(b => b.LocationId == destination.Last()).ToList();
-                        if (bookmarks != null && bookmarks.Any())
-                            _traveler.Destination = new BookmarkDestination(bookmarks.OrderBy(b => b.CreatedOn).First());
+                        IEnumerable<DirectBookmark> bookmarks = Cache.Instance.DirectEve.Bookmarks.Where(b => b.LocationId == destination.LastOrDefault()).ToList();
+                        if (bookmarks.FirstOrDefault() != null && bookmarks.Any())
+                            Traveler.Destination = new BookmarkDestination(bookmarks.OrderBy(b => b.CreatedOn).FirstOrDefault());
                         else
                         {
-                            Logging.Log("DirectionalScannerBehavior.Traveler", "Destination: [" + Cache.Instance.DirectEve.Navigation.GetLocation(destination.Last()).Name + "]", Logging.white);
-                            _traveler.Destination = new SolarSystemDestination(destination.Last());
+                            Logging.Log("DirectionalScannerBehavior.Traveler", "Destination: [" + Cache.Instance.DirectEve.Navigation.GetLocation(destination.Last()).Name + "]", Logging.White);
+                            Traveler.Destination = new SolarSystemDestination(destination.LastOrDefault());
                         }
                     }
                     else
                     {
-                        _traveler.ProcessState();
+                        Traveler.ProcessState();
+
                         //we also assume you are connected during a manual set of questor into travel mode (safe assumption considering someone is at the kb)
-                        Cache.Instance.LastKnownGoodConnectedTime = DateTime.Now;
+                        Cache.Instance.LastKnownGoodConnectedTime = DateTime.UtcNow;
                         Cache.Instance.MyWalletBalance = Cache.Instance.DirectEve.Me.Wealth;
 
                         if (_States.CurrentTravelerState == TravelerState.AtDestination)
                         {
                             if (_States.CurrentCombatMissionCtrlState == CombatMissionCtrlState.Error)
                             {
-                                Logging.Log("DirectionalScannerBehavior.Traveler", "an error has occurred", Logging.white);
+                                Logging.Log("DirectionalScannerBehavior.Traveler", "an error has occurred", Logging.White);
                                 if (_States.CurrentDirectionalScannerBehaviorState == DirectionalScannerBehaviorState.Traveler)
                                 {
                                     _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Error;
                                 }
                                 return;
                             }
-                            else if (Cache.Instance.InSpace)
+
+                            if (Cache.Instance.InSpace)
                             {
-                                Logging.Log("DirectionalScannerBehavior.Traveler", "Arrived at destination (in space, Questor stopped)", Logging.white);
+                                Logging.Log("DirectionalScannerBehavior.Traveler", "Arrived at destination (in space, Questor stopped)", Logging.White);
                                 if (_States.CurrentDirectionalScannerBehaviorState == DirectionalScannerBehaviorState.Traveler) _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Error;
                                 return;
                             }
-                            else
-                            {
-                                Logging.Log("DirectionalScannerBehavior.Traveler", "Arrived at destination", Logging.white);
-                                if (_States.CurrentDirectionalScannerBehaviorState == DirectionalScannerBehaviorState.Traveler) _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Idle;
-                                return;
-                            }
+
+                            Logging.Log("DirectionalScannerBehavior.Traveler", "Arrived at destination", Logging.White);
+                            if (_States.CurrentDirectionalScannerBehaviorState == DirectionalScannerBehaviorState.Traveler) _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Idle;
+                            return;
                         }
                     }
                     break;
@@ -404,28 +350,26 @@ namespace Questor.Behaviors
                     {
                         if (station.Distance > (int)Distance.WarptoDistance)
                         {
-                            Logging.Log("DirectionalScannerBehavior.GotoNearestStation", "[" + station.Name + "] which is [" + Math.Round(station.Distance / 1000, 0) + "k away]", Logging.white);
+                            Logging.Log("DirectionalScannerBehavior.GotoNearestStation", "[" + station.Name + "] which is [" + Math.Round(station.Distance / 1000, 0) + "k away]", Logging.White);
                             station.WarpToAndDock();
                             if (_States.CurrentDirectionalScannerBehaviorState == DirectionalScannerBehaviorState.GotoNearestStation) _States.CurrentDirectionalScannerBehaviorState = DirectionalScannerBehaviorState.Idle;
                             break;
                         }
+
+                        if (station.Distance < 1900)
+                        {
+                            if (DateTime.UtcNow > Cache.Instance.NextDockAction)
+                            {
+                                Logging.Log("DirectionalScannerBehavior.GotoNearestStation", "[" + station.Name + "] which is [" + Math.Round(station.Distance / 1000, 0) + "k away]", Logging.White);
+                                station.Dock();
+                            }
+                        }
                         else
                         {
-                            if (station.Distance < 1900)
+                            if (Cache.Instance.NextApproachAction < DateTime.UtcNow && (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != station.Id))
                             {
-                                if (DateTime.Now > Cache.Instance.NextDockAction)
-                                {
-                                    Logging.Log("DirectionalScannerBehavior.GotoNearestStation", "[" + station.Name + "] which is [" + Math.Round(station.Distance / 1000, 0) + "k away]", Logging.white);
-                                    station.Dock();
-                                }
-                            }
-                            else
-                            {
-                                if (Cache.Instance.NextApproachAction < DateTime.Now && (Cache.Instance.Approaching == null || Cache.Instance.Approaching.Id != station.Id))
-                                {
-                                    Logging.Log("DirectionalScannerBehavior.GotoNearestStation", "Approaching [" + station.Name + "] which is [" + Math.Round(station.Distance / 1000, 0) + "k away]", Logging.white);
-                                    station.Approach();
-                                }
+                                Logging.Log("DirectionalScannerBehavior.GotoNearestStation", "Approaching [" + station.Name + "] which is [" + Math.Round(station.Distance / 1000, 0) + "k away]", Logging.White);
+                                station.Approach();
                             }
                         }
                     }
@@ -436,98 +380,98 @@ namespace Questor.Behaviors
                     break;
 
                 case DirectionalScannerBehaviorState.PVPDirectionalScanHalfanAU:
-                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScanhalfanAU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScanhalfanAU - Starting", Logging.White);
                     List<EntityCache> pvpDirectionalScanHalfanAUentitiesInList = Cache.Instance.Entities.Where(t => t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pvpDirectionalScanHalfanAUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVPDirectionalScan1AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan1AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan1AU - Starting", Logging.White);
                     List<EntityCache> pvpDirectionalScan1AUentitiesInList = Cache.Instance.Entities.Where(t => t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 1).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pvpDirectionalScan1AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVPDirectionalScan5AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan5AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan5AU - Starting", Logging.White);
                     List<EntityCache> pvpDirectionalScan5AUentitiesInList = Cache.Instance.Entities.Where(t => t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 5).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pvpDirectionalScan5AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVPDirectionalScan10AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan10AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan10AU - Starting", Logging.White);
                     List<EntityCache> pvpDirectionalScan10AUentitiesInList = Cache.Instance.Entities.Where(t => t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 10).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pvpDirectionalScan10AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVPDirectionalScan15AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan15AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan15AU - Starting", Logging.White);
                     List<EntityCache> pvpDirectionalScan15AUentitiesInList = Cache.Instance.Entities.Where(t => t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 15).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pvpDirectionalScan15AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVPDirectionalScan20AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan20AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan20AU - Starting", Logging.White);
                     List<EntityCache> pvpDirectionalScan20AUentitiesInList = Cache.Instance.Entities.Where(t => t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 20).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pvpDirectionalScan20AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVPDirectionalScan50AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan50AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVPDirectionalScan50AU - Starting", Logging.White);
                     List<EntityCache> pvpDirectionalScan50AUentitiesInList = Cache.Instance.Entities.Where(t => t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 50).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pvpDirectionalScan50AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVEDirectionalScanHalfanAU:
-                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScanhalfanAU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScanhalfanAU - Starting", Logging.White);
                     List<EntityCache> pveDirectionalScanHalfanAUentitiesInList = Cache.Instance.Entities.Where(t => !t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pveDirectionalScanHalfanAUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVEDirectionalScan1AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan1AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan1AU - Starting", Logging.White);
                     List<EntityCache> pveDirectionalScan1AUentitiesInList = Cache.Instance.Entities.Where(t => !t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 1).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pveDirectionalScan1AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVEDirectionalScan5AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan5AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan5AU - Starting", Logging.White);
                     List<EntityCache> pveDirectionalScan5AUentitiesInList = Cache.Instance.Entities.Where(t => !t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 5).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pveDirectionalScan5AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVEDirectionalScan10AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan10AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan10AU - Starting", Logging.White);
                     List<EntityCache> pveDirectionalScan10AUentitiesInList = Cache.Instance.Entities.Where(t => !t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 10).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pveDirectionalScan10AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVEDirectionalScan15AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan15AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan15AU - Starting", Logging.White);
                     List<EntityCache> pveDirectionalScan15AUentitiesInList = Cache.Instance.Entities.Where(t => !t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 15).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pveDirectionalScan15AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVEDirectionalScan20AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan20AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan20AU - Starting", Logging.White);
                     List<EntityCache> pveDirectionalScan20AUentitiesInList = Cache.Instance.Entities.Where(t => !t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 20).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pveDirectionalScan20AUentitiesInList);
                     Cache.Instance.Paused = true;
                     break;
 
                 case DirectionalScannerBehaviorState.PVEDirectionalScan50AU:
-                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan50AU - Starting", Logging.white);
+                    Logging.Log("DirectionalScannerBehavior", "PVEDirectionalScan50AU - Starting", Logging.White);
                     List<EntityCache> pveDirectionalScan50AUentitiesInList = Cache.Instance.Entities.Where(t => !t.IsPlayer && t.Distance < (double)Distance.DirectionalScannerCloseRange * 50).OrderBy(t => t.Distance).ToList();
                     Statistics.EntityStatistics(pveDirectionalScan50AUentitiesInList);
                     Cache.Instance.Paused = true;

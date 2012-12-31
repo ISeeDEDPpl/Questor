@@ -1,5 +1,4 @@
-﻿
-namespace Questor.Modules.Actions
+﻿namespace Questor.Modules.Actions
 {
     using System;
     using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace Questor.Modules.Actions
 
         private DateTime _lastAction;
 
-        private bool ReturnBuy;
+        private bool _returnBuy;
 
         public void ProcessState()
         {
@@ -27,7 +26,7 @@ namespace Questor.Modules.Actions
             if (Cache.Instance.InSpace)
                 return;
 
-            if (DateTime.Now < Cache.Instance.LastInSpace.AddSeconds(20)) // we wait 20 seconds after we last thought we were in space before trying to do anything in station
+            if (DateTime.UtcNow < Cache.Instance.LastInSpace.AddSeconds(20)) // we wait 20 seconds after we last thought we were in space before trying to do anything in station
                 return;
 
             DirectMarketWindow marketWindow = Cache.Instance.DirectEve.Windows.OfType<DirectMarketWindow>().FirstOrDefault();
@@ -60,14 +59,14 @@ namespace Questor.Modules.Actions
                     if (!marketWindow.IsReady)
                         break;
 
-                    Logging.Log("Buy", "Opening Market", Logging.white);
+                    Logging.Log("Buy", "Opening Market", Logging.White);
                     _States.CurrentBuyState = BuyState.LoadItem;
 
                     break;
 
                 case BuyState.LoadItem:
 
-                    _lastAction = DateTime.Now;
+                    _lastAction = DateTime.UtcNow;
 
                     if (marketWindow != null && marketWindow.DetailTypeId != Item)
                     {
@@ -81,7 +80,7 @@ namespace Questor.Modules.Actions
 
                 case BuyState.BuyItem:
 
-                    if (DateTime.Now.Subtract(_lastAction).TotalSeconds < 5)
+                    if (DateTime.UtcNow.Subtract(_lastAction).TotalSeconds < 5)
                         break;
 
                     if (marketWindow != null)
@@ -101,8 +100,8 @@ namespace Questor.Modules.Actions
                             {
                                 order.Buy(Unit, DirectOrderRange.Station);
                                 Unit = Unit - order.VolumeEntered;
-                                Logging.Log("Buy", "Missing " + Convert.ToString(Unit) + " units", Logging.white);
-                                ReturnBuy = true;
+                                Logging.Log("Buy", "Missing " + Convert.ToString(Unit) + " units", Logging.White);
+                                _returnBuy = true;
                                 _States.CurrentBuyState = BuyState.WaitForItems;
                             }
                         }
@@ -112,22 +111,22 @@ namespace Questor.Modules.Actions
 
                 case BuyState.WaitForItems:
                     // Wait 5 seconds after moving
-                    if (DateTime.Now.Subtract(_lastAction).TotalSeconds < 5)
+                    if (DateTime.UtcNow.Subtract(_lastAction).TotalSeconds < 5)
                         break;
 
                     // Close the market window if there is one
                     if (marketWindow != null)
                         marketWindow.Close();
 
-                    if (ReturnBuy == true)
+                    if (_returnBuy)
                     {
-                        Logging.Log("Buy", "Return Buy", Logging.white);
-                        ReturnBuy = false;
+                        Logging.Log("Buy", "Return Buy", Logging.White);
+                        _returnBuy = false;
                         _States.CurrentBuyState = BuyState.OpenMarket;
                         break;
                     }
 
-                    Logging.Log("Buy", "Done", Logging.white);
+                    Logging.Log("Buy", "Done", Logging.White);
                     _States.CurrentBuyState = BuyState.Done;
 
                     break;

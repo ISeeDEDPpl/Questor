@@ -24,7 +24,7 @@ namespace Questor.Modules.BackgroundTasks
         public static HashSet<int> Salvagers = new HashSet<int> { 25861, 26983, 30836 };
         public static HashSet<int> TractorBeams = new HashSet<int> { 24348, 24620, 24622, 24644 };
 
-        private DateTime _lastJettison = DateTime.Now;
+        private DateTime _lastJettison = DateTime.UtcNow;
         private DateTime _nextAction;
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Questor.Modules.BackgroundTasks
                 if (wreck == null)
                     return;
 
-                Logging.Log("Salvage", "Activating salvager [" + salvager.ItemId + "] on [" + wreck.Name + "][ID: " + wreck.Id + "]", Logging.white);
+                Logging.Log("Salvage", "Activating salvager [" + salvager.ItemId + "] on [" + wreck.Name + "][ID: " + Cache.Instance.MaskedID(wreck.Id) + "]", Logging.White);
                 salvager.Activate(wreck.Id);
             }
         }
@@ -102,7 +102,7 @@ namespace Questor.Modules.BackgroundTasks
             {
                 if (Cache.Instance.IgnoreTargets.Contains(wreck.Name))
                 {
-                    Logging.Log("Salvage", "Cargo Container [" + wreck.Name + "][ID: " + wreck.Id + "] on the ignore list, ignoring.", Logging.white);
+                    Logging.Log("Salvage", "Cargo Container [" + wreck.Name + "][ID: " + Cache.Instance.MaskedID(wreck.Id) + "] on the ignore list, ignoring.", Logging.White);
                     wreck.UnlockTarget();
                     continue;
                 }
@@ -157,7 +157,7 @@ namespace Questor.Modules.BackgroundTasks
                         continue;
                 }
 
-                Logging.Log("Salvage", "Locking [" + wreck.Name + "][ID:" + wreck.Id + "][" + Math.Round(wreck.Distance / 1000, 0) + "k away]", Logging.white);
+                Logging.Log("Salvage", "Locking [" + wreck.Name + "][ID: " + Cache.Instance.MaskedID(wreck.Id) + "][" + Math.Round(wreck.Distance / 1000, 0) + "k away]", Logging.White);
 
                 wreck.LockTarget();
                 wreckTargets.Add(wreck);
@@ -180,7 +180,7 @@ namespace Questor.Modules.BackgroundTasks
 
             List<ItemCache> shipsCargo = Cache.Instance.CargoHold.Items.Select(i => new ItemCache(i)).ToList();
             double freeCargoCapacity = Cache.Instance.CargoHold.Capacity - Cache.Instance.CargoHold.UsedCapacity;
-            IEnumerable<DirectContainerWindow> lootWindows = Cache.Instance.DirectEve.Windows.OfType<DirectContainerWindow>().Where(w => !string.IsNullOrEmpty(w.Name) && w.Name.StartsWith("loot_"));
+            IEnumerable<DirectContainerWindow> lootWindows = Cache.Instance.DirectEve.Windows.OfType<DirectContainerWindow>().Where(w => !string.IsNullOrEmpty(w.Name) && w.Name.StartsWith("loot_")).ToList();
             foreach (DirectContainerWindow window in lootWindows)
             {
                 // The window is not ready, then continue
@@ -193,7 +193,7 @@ namespace Questor.Modules.BackgroundTasks
                 // Does it no longer exist or is it out of transfer range or its looted
                 if (containerEntity == null || containerEntity.Distance > (int)Distance.SafeScoopRange || Cache.Instance.LootedContainers.Contains(containerEntity.Id))
                 {
-                    Logging.Log("Salvage", "Closing loot window [" + window.ItemId + "]", Logging.white);
+                    Logging.Log("Salvage", "Closing loot window [" + window.ItemId + "]", Logging.White);
                     window.Close();
                     continue;
                 }
@@ -250,7 +250,7 @@ namespace Questor.Modules.BackgroundTasks
                             continue;
 
                         // Make a list of items which are worth less
-                        List<ItemCache> worthLess = shipsCargo;
+                        List<ItemCache> worthLess;
                         if (item.IskPerM3.HasValue)
                             worthLess = shipsCargo.Where(sc => sc.IskPerM3.HasValue && sc.IskPerM3 < item.IskPerM3).ToList();
                         else
@@ -268,7 +268,7 @@ namespace Questor.Modules.BackgroundTasks
                         if ((freeCargoCapacity + worthLess.Sum(wl => wl.TotalVolume)) < item.TotalVolume)
                         {
                             if (isMissionItem)
-                                Logging.Log("Scoop", "Not enough space for [" + item.Name + "] Need [" + item.TotalVolume + "]m3 - maximum available [" + (freeCargoCapacity + worthLess.Sum(wl => wl.TotalVolume)) + "]m3", Logging.white);
+                                Logging.Log("Scoop", "Not enough space for [" + item.Name + "] Need [" + item.TotalVolume + "]m3 - maximum available [" + (freeCargoCapacity + worthLess.Sum(wl => wl.TotalVolume)) + "]m3", Logging.White);
 
                             continue;
                         }
@@ -293,16 +293,16 @@ namespace Questor.Modules.BackgroundTasks
                             // If this is not a cargo container, then jettison loot
                             if (containerEntity.GroupId != (int)Group.CargoContainer)
                             {
-                                if (DateTime.Now.Subtract(_lastJettison).TotalSeconds < 185)
+                                if (DateTime.UtcNow.Subtract(_lastJettison).TotalSeconds < 185)
                                     return;
 
-                                Logging.Log("Scoop", "Jettisoning [" + moveTheseItems.Count + "] items to make room for the more valuable loot", Logging.white);
+                                Logging.Log("Scoop", "Jettisoning [" + moveTheseItems.Count + "] items to make room for the more valuable loot", Logging.White);
 
                                 // Note: This could (in theory) fuck up with the bot jettison an item and
                                 // then picking it up again :/ (granted it should never happen unless
                                 // mission item volume > reserved volume
                                 Cache.Instance.CargoHold.Jettison(moveTheseItems.Select(i => i.ItemId));
-                                _lastJettison = DateTime.Now;
+                                _lastJettison = DateTime.UtcNow;
                                 return;
                             }
 
@@ -311,7 +311,7 @@ namespace Questor.Modules.BackgroundTasks
 
                             // Remove it from the ships cargo list
                             shipsCargo.RemoveAll(i => moveTheseItems.Any(wl => wl.ItemId == i.Id));
-                            Logging.Log("Scoop", "Moving [" + moveTheseItems.Count + "] items into the cargo container to make room for the more valuable loot", Logging.white);
+                            Logging.Log("Scoop", "Moving [" + moveTheseItems.Count + "] items into the cargo container to make room for the more valuable loot", Logging.White);
                         }
                     }
 
@@ -330,7 +330,7 @@ namespace Questor.Modules.BackgroundTasks
                     //Logging.Log("Scoop: Looting container [" + containerEntity.Name + "][" + containerEntity.Id + "], [" + lootItems.Count + "] valuable items");
                 }
                 else
-                    Logging.Log("Scoop", "Container [" + containerEntity.Name + "][ID: " + containerEntity.Id + "] contained no valuable items", Logging.white);
+                    Logging.Log("Scoop", "Container [" + containerEntity.Name + "][ID: " + Cache.Instance.MaskedID(containerEntity.Id) + "] contained no valuable items", Logging.White);
             }
 
             // Open a container in range
@@ -350,13 +350,13 @@ namespace Questor.Modules.BackgroundTasks
                     continue;
 
                 // Ignore open request within 10 seconds
-                if (_openedContainers.ContainsKey(containerEntity.Id) && DateTime.Now.Subtract(_openedContainers[containerEntity.Id]).TotalSeconds < 10)
+                if (_openedContainers.ContainsKey(containerEntity.Id) && DateTime.UtcNow.Subtract(_openedContainers[containerEntity.Id]).TotalSeconds < 10)
                     continue;
 
                 // Open the container
-                Logging.Log("Scoop", "Opening container [" + containerEntity.Name + "][ID: " + containerEntity.Id + "]", Logging.white);
+                Logging.Log("Scoop", "Opening container [" + containerEntity.Name + "][ID: " + Cache.Instance.MaskedID(containerEntity.Id) + "]", Logging.White);
                 containerEntity.OpenCargo();
-                _openedContainers[containerEntity.Id] = DateTime.Now;
+                _openedContainers[containerEntity.Id] = DateTime.UtcNow;
                 break;
             }
         }
@@ -388,45 +388,45 @@ namespace Questor.Modules.BackgroundTasks
 
                     // Default action
                     _States.CurrentScoopState = ScoopState.TargetHostileWrecks;
-                    //if (cargo.Window.IsReady && cargo.Items.Any() && _nextAction < DateTime.Now)
+                    //if (cargo.Window.IsReady && cargo.Items.Any() && _nextAction < DateTime.UtcNow)
                     //{
                     // Check if there are actually duplicates
                     //    var duplicates = cargo.Items.Where(i => i.Quantity > 0).GroupBy(i => i.TypeId).Any(t => t.Count() > 1);
                     //    if (duplicates)
                     //        State = SalvageState.StackItems;
                     //    else
-                    //        _nextAction = DateTime.Now.AddSeconds(150);
+                    //        _nextAction = DateTime.UtcNow.AddSeconds(150);
                     //}
                     break;
 
                 case ScoopState.StackItemsWhileAggressed:
-                    Logging.Log("Salvage", "Stacking items", Logging.white);
+                    Logging.Log("Salvage", "Stacking items", Logging.White);
 
                     if (cargo != null && (cargo.Window.IsReady))
                         cargo.StackAll();
 
-                    _nextAction = DateTime.Now.AddSeconds(5);
+                    _nextAction = DateTime.UtcNow.AddSeconds(5);
                     _States.CurrentScoopState = ScoopState.WaitForStackingWhileAggressed;
                     break;
 
                 case ScoopState.WaitForStackingWhileAggressed:
                     // Wait 5 seconds after stacking
-                    if (_nextAction > DateTime.Now)
+                    if (_nextAction > DateTime.UtcNow)
                         break;
 
                     if (Cache.Instance.DirectEve.GetLockedItems().Count == 0)
                     {
-                        Logging.Log("Salvage", "Done stacking", Logging.white);
+                        Logging.Log("Salvage", "Done stacking", Logging.White);
                         _States.CurrentScoopState = ScoopState.TargetHostileWrecks;
                         break;
                     }
 
-                    if (DateTime.Now.Subtract(_nextAction).TotalSeconds > 120)
+                    if (DateTime.UtcNow.Subtract(_nextAction).TotalSeconds > 120)
                     {
-                        Logging.Log("Salvage", "Stacking items timed out, clearing item locks", Logging.orange);
+                        Logging.Log("Salvage", "Stacking items timed out, clearing item locks", Logging.Orange);
                         Cache.Instance.DirectEve.UnlockItems();
 
-                        Logging.Log("Salvage", "Done stacking", Logging.white);
+                        Logging.Log("Salvage", "Done stacking", Logging.White);
                         _States.CurrentScoopState = ScoopState.TargetHostileWrecks;
                         break;
                     }

@@ -4,7 +4,7 @@
     {
         Idle,
         Begin,
-        OpenItemHangar,
+        ReadyItemhangar,
         OpenCargo,
         MoveItems,
         AllItems,

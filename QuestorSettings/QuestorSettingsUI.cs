@@ -52,21 +52,24 @@ namespace QuestorSettings
         {
             XElement xml = XDocument.Load(File).Root;
 
-            cmbautoStart.Text = (string)xml.Element("autoStart");
-            txtrandomDelay.Text = (string)xml.Element("randomDelay");
-            txtminimumDelay.Text = (string)xml.Element("minimumDelay");
-            txtwindowXPosition.Text = (string)xml.Element("windowXPosition");
-            txtwindowYPosition.Text = (string)xml.Element("windowYPosition");
-            txtbookmarkWarpOut.Text = (string)xml.Element("bookmarkWarpOut");
-            cmbsaveLog.Text = (string)xml.Element("saveLog");
-            txtmaxLineConsole.Text = (string)xml.Element("maxLineConsole");
+            if (xml != null)
+            {
+                cmbautoStart.Text = (string)xml.Element("autoStart");
+                txtrandomDelay.Text = (string)xml.Element("randomDelay");
+                txtminimumDelay.Text = (string)xml.Element("minimumDelay");
+                txtwindowXPosition.Text = (string)xml.Element("windowXPosition");
+                txtwindowYPosition.Text = (string)xml.Element("windowYPosition");
+                txtbookmarkWarpOut.Text = (string)xml.Element("bookmarkWarpOut");
+                cmbsaveLog.Text = (string)xml.Element("saveLog");
+                txtmaxLineConsole.Text = (string)xml.Element("maxLineConsole");
 
-            cmbenableStorylines.Text = (string)xml.Element("enableStorylines");
-            txtagentName.Text = (string)xml.Element("agentName");
-            txtmissionsPath.Text = (string)xml.Element("missionsPath");
-            cmbwaitDecline.Text = (string)xml.Element("waitDecline");
-            txtminStandings.Text = (string)xml.Element("minStandings");
-            cmblootEverything.Text = (string)xml.Element("lootEverything");
+                cmbenableStorylines.Text = (string)xml.Element("enableStorylines");
+                txtagentName.Text = (string)xml.Element("agentName");
+                txtmissionsPath.Text = (string)xml.Element("missionsPath");
+                cmbwaitDecline.Text = (string)xml.Element("waitDecline");
+                txtminStandings.Text = (string)xml.Element("minStandings");
+                cmblootEverything.Text = (string)xml.Element("lootEverything");
+            }
 
             txtfactionblacklist.Text = "";
             XElement factionblacklist = xml.Element("factionblacklist");

@@ -19,6 +19,7 @@
         GotoBase,
         CourierMission,
         CompleteMission,
+        Statistics,
         UnloadLoot,
         BeginAfterMissionSalvaging,
         GotoSalvageBookmark,

@@ -18,6 +18,7 @@ namespace Questor.Modules.States
         OpenAmmoHangar,
         OpenCargo,
         OpenDroneBay,
+        RepairShop,
         MoveDrones,
         MoveItems,
         WaitForItems,
@@ -28,10 +29,7 @@ namespace Questor.Modules.States
         ActivateTransportShip,
         NotEnoughAmmo,
         NotEnoughDrones,
-        WaitForFitting,
-        OpenFittingWindow,
-        WaitForFittingWindow,
-        ChoseFitting,
+        LoadSavedFitting,
         Cleanup
     }
 }

@@ -1,27 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace GridMon
 {
-    using LavishScriptAPI;
     using DirectEve;
 
-
-    public partial class frmMain : Form
+    public partial class FrmMain : Form
     {
         private GridMonState State { get; set; }
+
         private DirectEve DirectEve { get; set; }
+
         private static DateTime _nextAction;
         private const int WaitMillis = 10000;
 
-
-        public frmMain()
+        public FrmMain()
         {
             InitializeComponent();
 
@@ -29,7 +22,8 @@ namespace GridMon
             DirectEve.OnFrame += OnFrame;
         }
 
-        delegate void SetButtonTextCallback(string text);
+        private delegate void SetButtonTextCallback(string text);
+
         public void SetButtonText(string text)
         {
             if (this.InvokeRequired)
@@ -43,10 +37,11 @@ namespace GridMon
             }
         }
 
-        delegate void LogCallback(string line);
+        private delegate void LogCallback(string line);
+
         public void Log(string line)
         {
-            //InnerSpaceAPI.InnerSpace.Echo(string.Format("{0:HH:mm:ss} {1}", DateTime.Now, line));
+            //InnerSpaceAPI.InnerSpace.Echo(string.Format("{0:HH:mm:ss} {1}", DateTime.UtcNow, line));
 
             if (this.InvokeRequired)
             {
@@ -55,7 +50,7 @@ namespace GridMon
             }
             else
             {
-                string output = string.Format("{0:HH:mm:ss} {1}\n", DateTime.Now, line);
+                string output = string.Format("{0:HH:mm:ss} {1}\n", DateTime.UtcNow, line);
                 tbLog.AppendText(output);
             }
         }
@@ -68,7 +63,7 @@ namespace GridMon
             }
 
             // Wait for the next action
-            if (_nextAction >= DateTime.Now)
+            if (_nextAction >= DateTime.UtcNow)
             {
                 return;
             }
@@ -79,14 +74,14 @@ namespace GridMon
                     Log("WatchGrid...");
                     foreach (var entity in DirectEve.Entities)
                     {
-                        if (entity.IsPc == true)
+                        if (entity.IsPc)
                         {
                             LogEntity("{0} {1} {2} {3} {4} {5}", entity);
                             // AppendSQL
                         }
                     }
                     State = GridMonState.WatchLocal;
-                    _nextAction = DateTime.Now.AddMilliseconds(WaitMillis);
+                    _nextAction = DateTime.UtcNow.AddMilliseconds(WaitMillis);
                     break;
 
                 case GridMonState.WatchLocal:
@@ -104,7 +99,7 @@ namespace GridMon
             }
         }
 
-        private void btnStartStop_Click(object sender, EventArgs e)
+        private void BtnStartStopClick(object sender, EventArgs e)
         {
             if (btnStartStop.Text == "Start")
             {
@@ -116,10 +111,9 @@ namespace GridMon
                 btnStartStop.Text = "Start";
                 State = GridMonState.Idle;
             }
-
         }
 
-        private void frmMain_FormClosed(object sender, FormClosedEventArgs e)
+        private void FrmMainFormClosed(object sender, FormClosedEventArgs e)
         {
             DirectEve.Dispose();
             DirectEve = null;

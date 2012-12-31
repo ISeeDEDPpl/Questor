@@ -20,7 +20,7 @@ namespace QuestorStatistics
 
         private string LogToView { get; set; }
 
-        private System.Windows.Forms.OpenFileDialog ofd;
+        private System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
 
         //-------------------------------------------------------------------------
         // Start the Form and look for the files .Statistics.log in the root

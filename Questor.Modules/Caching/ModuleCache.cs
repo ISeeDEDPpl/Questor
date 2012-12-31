@@ -145,10 +145,10 @@ namespace Questor.Modules.Caching
             }
         }
 
-        public IEnumerable<DirectItem> MatchingAmmo
-        {
-            get { return _module.MatchingAmmo; }
-        }
+        //public IEnumerable<DirectItem> MatchingAmmo
+        //{
+        //    get { return _module.MatchingAmmo; }
+        //}
 
         public DirectItem Charge
         {

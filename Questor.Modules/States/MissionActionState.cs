@@ -11,12 +11,16 @@ namespace Questor.Modules.States
 {
     public enum ActionState
     {
+        LogWhatIsOnGrid,
         MoveTo,
+        OrbitEntity,
         MoveToBackground,
         Activate,
         WaitUntilTargeted,
         ClearPocket,
+        ClearAggro,
         ClearWithinWeaponsRangeOnly,
+        ClearWithinWeaponsRangewAggroOnly,
         AggroOnly,
         Kill,
         KillOnce,

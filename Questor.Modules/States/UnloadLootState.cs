@@ -22,10 +22,12 @@ namespace Questor.Modules.States
         StackLootHangar,
         CloseAmmoHangar,
         CloseLootHangar,
+        WaitForStacking,
         WaitForAmmoHangarStacking,
         WaitForLootHangarStacking,
         Done,
         MoveAmmo,
-        MoveCommonMissionCompletionItemsToAmmoHangar
+        MoveCommonMissionCompletionItemsToAmmoHangar,
+        MoveCommonMissionCompletionItemsToItemsHangar
     }
 }

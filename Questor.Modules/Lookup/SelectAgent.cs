@@ -13,7 +13,7 @@
         {
             Name = (string)agentList.Attribute("name") ?? "";
             Priorit = (int)agentList.Attribute("priority");
-            DeclineTimer = DateTime.Now;
+            DeclineTimer = DateTime.UtcNow;
         }
 
         public string Name { get; private set; }

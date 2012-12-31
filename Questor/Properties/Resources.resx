@@ -114,4 +114,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+   <data name="QuestorfrmMain_RefreshInfoDisplayedInUI_n_a">
+      <value xml:space="preserve">n/a</value>
+   </data>
+   <data name="QuestorfrmMain_UpdateUiTick_No_Mission_Selected_Yet">
+      <value xml:space="preserve">No Mission Selected Yet</value>
+   </data>
 </root>

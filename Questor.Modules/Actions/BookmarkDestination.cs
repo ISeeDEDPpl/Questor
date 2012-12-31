@@ -24,18 +24,18 @@ namespace Questor.Modules.Actions
         {
             if (bookmark == null)
             {
-                Logging.Log("QuestorManager.BookmarkDestination", "Invalid bookmark destination!", Logging.white);
+                Logging.Log("QuestorManager.BookmarkDestination", "Invalid bookmark destination!", Logging.White);
 
                 SolarSystemId = Cache.Instance.DirectEve.Session.SolarSystemId ?? -1;
                 BookmarkId = -1;
                 return;
             }
 
-            Logging.Log("QuestorManager.BookmarkDestination", "Destination set to bookmark [" + bookmark.Title + "]", Logging.white);
+            Logging.Log("QuestorManager.BookmarkDestination", "Destination set to bookmark [" + bookmark.Title + "]", Logging.White);
             DirectLocation location = GetBookmarkLocation(bookmark);
             if (location == null)
             {
-                Logging.Log("QuestorManager.BookmarkDestination", "Invalid bookmark destination!", Logging.white);
+                Logging.Log("QuestorManager.BookmarkDestination", "Invalid bookmark destination!", Logging.White);
 
                 SolarSystemId = Cache.Instance.DirectEve.Session.SolarSystemId ?? -1;
                 BookmarkId = -1;
@@ -84,10 +84,10 @@ namespace Questor.Modules.Actions
                     return true;
 
                 // We are apparently in a station that is incorrect
-                Logging.Log("QuestorManager.BookmarkDestination", "We're docked in the wrong station, undocking", Logging.white);
+                Logging.Log("QuestorManager.BookmarkDestination", "We're docked in the wrong station, undocking", Logging.White);
 
                 Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.CmdExitStation);
-                nextAction = DateTime.Now.AddSeconds(30);
+                nextAction = DateTime.UtcNow.AddSeconds(30);
                 return false;
             }
 
@@ -96,7 +96,7 @@ namespace Questor.Modules.Actions
             {
                 bool arrived = StationDestination2.PerformFinalDestinationTask(bookmark.Entity.Id, bookmark.Entity.Name, ref nextAction);
                 if (arrived)
-                    Logging.Log("QuestorManager.BookmarkDestination", "Arrived at bookmark [" + bookmark.Title + "]", Logging.white);
+                    Logging.Log("QuestorManager.BookmarkDestination", "Arrived at bookmark [" + bookmark.Title + "]", Logging.White);
                 return arrived;
             }
 
@@ -104,12 +104,12 @@ namespace Questor.Modules.Actions
             if (Cache.Instance.DirectEve.Session.IsInStation)
             {
                 // We are in a station, but not the correct station!
-                if (nextAction < DateTime.Now)
+                if (nextAction < DateTime.UtcNow)
                 {
-                    Logging.Log("QuestorManager.BookmarkDestination", "We're docked but our destination is in space, undocking", Logging.white);
+                    Logging.Log("QuestorManager.BookmarkDestination", "We're docked but our destination is in space, undocking", Logging.White);
 
                     Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.CmdExitStation);
-                    nextAction = DateTime.Now.AddSeconds(30);
+                    nextAction = DateTime.UtcNow.AddSeconds(30);
                 }
 
                 // We are not there yet
@@ -125,31 +125,29 @@ namespace Questor.Modules.Actions
             // This bookmark has no x / y / z, assume we are there.
             if (bookmark.X == -1 || bookmark.Y == -1 || bookmark.Z == -1)
             {
-                Logging.Log("QuestorManager.BookmarkDestination", "Arrived at the bookmark [" + bookmark.Title + "][No XYZ]", Logging.white);
+                Logging.Log("QuestorManager.BookmarkDestination", "Arrived at the bookmark [" + bookmark.Title + "][No XYZ]", Logging.White);
                 return true;
             }
 
             double distance = Cache.Instance.DistanceFromMe(bookmark.X ?? 0, bookmark.Y ?? 0, bookmark.Z ?? 0);
             if (distance < warpDistance)
             {
-                Logging.Log("QuestorManager.BookmarkDestination", "Arrived at the bookmark [" + bookmark.Title + "]", Logging.white);
+                Logging.Log("QuestorManager.BookmarkDestination", "Arrived at the bookmark [" + bookmark.Title + "]", Logging.White);
                 return true;
             }
 
-            if (nextAction > DateTime.Now)
+            if (nextAction > DateTime.UtcNow)
                 return false;
 
-            if (Cache.Instance.GateInGrid() && (distance/1000)<(int)Distance.MaxPocketsDistanceKm)
+            if (Cache.Instance.GateInGrid() && (distance / 1000) < (int)Distance.MaxPocketsDistanceKm)
             {
-                Logging.Log("QuestorManager.BookmarkDestination","Bookmark [" + bookmark.Title + "][" + Math.Round((distance / 1000) / 149598000, 2) + "] AU away. Which is [" + Math.Round((distance / 1000), 2) + "].", Logging.white);
+                Logging.Log("QuestorManager.BookmarkDestination", "Bookmark [" + bookmark.Title + "][" + Math.Round((distance / 1000) / 149598000, 2) + "] AU away. Which is [" + Math.Round((distance / 1000), 2) + "].", Logging.White);
             }
 
-            Logging.Log("QuestorManager.BookmarkDestination",
-                "Warping to bookmark [" + bookmark.Title + "][" + Math.Round((distance / 1000) / 149598000, 2) + "] AU away. Which is ["+ Math.Round((distance / 1000),2)+"]"
-                ,Logging.white);
+            Logging.Log("QuestorManager.BookmarkDestination", "Warping to bookmark [" + bookmark.Title + "][" + Math.Round((distance / 1000) / 149598000, 2) + "] AU away. Which is [" + Math.Round((distance / 1000), 2) + "]", Logging.White);
 
             bookmark.WarpTo();
-            nextAction = DateTime.Now.AddSeconds(30);
+            nextAction = DateTime.UtcNow.AddSeconds(30);
             return false;
         }
     }

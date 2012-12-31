@@ -110,7 +110,7 @@ namespace Questor
                 return -1;
             }
 
-            //Cache.Instance.EnteredCloseQuestor_DateTime = DateTime.Now;
+            //Cache.Instance.EnteredCloseQuestor_DateTime = DateTime.UtcNow;
             _questor.State = QuestorState.CloseQuestor;
 
             Logging.Log("QuestorState is now: CloseQuestor ");

@@ -7,6 +7,8 @@
         GotoDropOffLocation,
         DropOffItem,
         Idle,
-        Done
+        CompleteMission,
+        Done,
+        Error
     }
 }

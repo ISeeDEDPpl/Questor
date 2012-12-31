@@ -17,7 +17,7 @@ namespace Questor.Modules.States
         Paused,
         Panic,
         Traveler,
-        LogCombatTargets, 
+        LogCombatTargets,
         LogDroneTargets,
         LogStationEntities,
         LogStargateEntities,

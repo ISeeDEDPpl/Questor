@@ -58,7 +58,7 @@
             this.btnHangar.TabIndex = 1;
             this.btnHangar.Text = "Start";
             this.btnHangar.UseVisualStyleBackColor = true;
-            this.btnHangar.Click += new System.EventHandler(this.btnHangar_Click);
+            this.btnHangar.Click += new System.EventHandler(this.BtnHangarClick);
             // 
             // lvItems
             // 
@@ -78,8 +78,8 @@
             this.lvItems.TabIndex = 2;
             this.lvItems.UseCompatibleStateImageBehavior = false;
             this.lvItems.View = System.Windows.Forms.View.Details;
-            this.lvItems.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lvItems_ColumnClick);
-            this.lvItems.SelectedIndexChanged += new System.EventHandler(this.lvItems_SelectedIndexChanged);
+            this.lvItems.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.LvItemsColumnClick);
+            this.lvItems.SelectedIndexChanged += new System.EventHandler(this.LvItemsSelectedIndexChanged);
             // 
             // chName
             // 
@@ -170,7 +170,7 @@
             this.btnStop.TabIndex = 9;
             this.btnStop.Text = "Stop";
             this.btnStop.UseVisualStyleBackColor = true;
-            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+            this.btnStop.Click += new System.EventHandler(this.BtnStopClick);
             // 
             // RefineCheckBox
             // 
@@ -181,7 +181,7 @@
             this.RefineCheckBox.TabIndex = 10;
             this.RefineCheckBox.Text = "Refine if profitable";
             this.RefineCheckBox.UseVisualStyleBackColor = true;
-            this.RefineCheckBox.CheckedChanged += new System.EventHandler(this.RefineCheckBox_CheckedChanged);
+            this.RefineCheckBox.CheckedChanged += new System.EventHandler(this.RefineCheckBoxCheckedChanged);
             // 
             // RefineEfficiencyInput
             // 
@@ -217,7 +217,7 @@
             this.UpdateMineralPricesButton.TabIndex = 13;
             this.UpdateMineralPricesButton.Text = "Update mineral prices";
             this.UpdateMineralPricesButton.UseVisualStyleBackColor = true;
-            this.UpdateMineralPricesButton.Click += new System.EventHandler(this.UpdateMineralPricesButton_Click);
+            this.UpdateMineralPricesButton.Click += new System.EventHandler(this.UpdateMineralPricesButtonClick);
             // 
             // ValueDumpUI
             // 
@@ -240,7 +240,7 @@
             this.Name = "ValueDumpUI";
             this.Text = "Value Dump";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ValueDumpUIFormClosed);
-            this.Load += new System.EventHandler(this.ValueDumpUI_Load);
+            this.Load += new System.EventHandler(this.ValueDumpUILoad);
             ((System.ComponentModel.ISupportInitialize)(this.RefineEfficiencyInput)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

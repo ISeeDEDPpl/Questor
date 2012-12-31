@@ -83,8 +83,11 @@
   <ItemGroup>
     <Compile Include="Behaviors\CombatHelperBehavior.cs" />
     <Compile Include="Behaviors\CombatMissionsBehavior.cs" />
+    <Compile Include="Behaviors\DebugBehavior.cs" />
+    <Compile Include="Behaviors\DebugHangarsBehavior.cs" />
     <Compile Include="Behaviors\DedicatedBookmarkSalvagerBehavior.cs" />
     <Compile Include="Behaviors\DirectionalScannerBehavior.cs" />
+    <Compile Include="Behaviors\MiningBehavior.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -4,6 +4,6 @@
     {
         Idle,
         CheckModalWindows,
-        CheckWindowsThatDontBelongInSpace,
+        CleanupTasks,
     }
 }

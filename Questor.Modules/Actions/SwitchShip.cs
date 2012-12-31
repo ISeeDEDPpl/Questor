@@ -1,4 +1,5 @@
-﻿
+﻿using Questor.Modules.BackgroundTasks;
+
 namespace Questor.Modules.Actions
 {
     using System;
@@ -22,7 +23,7 @@ namespace Questor.Modules.Actions
             if (Cache.Instance.InSpace)
                 return;
 
-            if (DateTime.Now < Cache.Instance.LastInSpace.AddSeconds(20)) // we wait 20 seconds after we last thought we were in space before trying to do anything in station
+            if (DateTime.UtcNow < Cache.Instance.LastInSpace.AddSeconds(20)) // we wait 20 seconds after we last thought we were in space before trying to do anything in station
                 return;
 
             var defaultFitting = Settings.Instance.DefaultFitting.Fitting;
@@ -30,8 +31,8 @@ namespace Questor.Modules.Actions
             switch (_States.CurrentSwitchShipState)
             {
                 case SwitchShipState.Idle:
-
                     break;
+
                 case SwitchShipState.Done:
                     break;
 
@@ -40,10 +41,11 @@ namespace Questor.Modules.Actions
                     break;
 
                 case SwitchShipState.OpenShipHangar:
+
                     // Is the ship hangar open?
                     if (!Cache.Instance.OpenShipsHangar("SwitchShip")) break;
 
-                    Logging.Log("SwitchShip", "Activating combat ship", Logging.white);
+                    Logging.Log("SwitchShip", "Activating combat ship", Logging.White);
 
                     _States.CurrentSwitchShipState = SwitchShipState.ActivateCombatShip;
 
@@ -54,32 +56,33 @@ namespace Questor.Modules.Actions
 
                     if ((!string.IsNullOrEmpty(shipName) && Cache.Instance.DirectEve.ActiveShip.GivenName.ToLower() != shipName))
                     {
-                        if (DateTime.Now.Subtract(_lastSwitchShipAction).TotalSeconds > Time.Instance.SwitchShipsDelay_seconds)
+                        if (DateTime.UtcNow.Subtract(_lastSwitchShipAction).TotalSeconds > Time.Instance.SwitchShipsDelay_seconds)
                         {
-                            if (!Cache.Instance.OpenShipsHangar("Arm")) break; 
-                            
+                            if (!Cache.Instance.OpenShipsHangar("SwitchShip")) break;
+
                             List<DirectItem> ships = Cache.Instance.ShipHangar.Items;
                             foreach (DirectItem ship in ships.Where(ship => ship.GivenName != null && ship.GivenName.ToLower() == shipName))
                             {
-                                Logging.Log("Arm", "Making [" + ship.GivenName + "] active", Logging.white);
+                                Logging.Log("SwitchShip", "Making [" + ship.GivenName + "] active", Logging.White);
 
                                 ship.ActivateShip();
-                                Logging.Log("SwitchShip", "Activated", Logging.white);
-                                _lastSwitchShipAction = DateTime.Now;
+                                Logging.Log("SwitchShip", "Activated", Logging.White);
+                                _lastSwitchShipAction = DateTime.UtcNow;
                                 return;
                             }
                         }
                     }
-                    _States.CurrentSwitchShipState = Settings.Instance.UseFittingManager ? SwitchShipState.OpenFittingWindow : SwitchShipState.Done;
+                    _States.CurrentSwitchShipState = Settings.Instance.UseFittingManager ? SwitchShipState.OpenFittingWindow : SwitchShipState.Cleanup;
 
                     break;
 
                 case SwitchShipState.OpenFittingWindow:
+
                     //let's check first if we need to change fitting at all
-                    Logging.Log("SwitchShip", "Fitting: " + defaultFitting + " - currentFit: " + Cache.Instance.CurrentFit, Logging.white);
+                    Logging.Log("SwitchShip", "Fitting: " + defaultFitting + " - currentFit: " + Cache.Instance.CurrentFit, Logging.White);
                     if (defaultFitting.Equals(Cache.Instance.CurrentFit))
                     {
-                        Logging.Log("SwitchShip", "Current fit is correct - no change necessary", Logging.white);
+                        Logging.Log("SwitchShip", "Current fit is correct - no change necessary", Logging.White);
                         _States.CurrentSwitchShipState = SwitchShipState.Done;
                     }
                     else
@@ -92,12 +95,14 @@ namespace Questor.Modules.Actions
                 case SwitchShipState.WaitForFittingWindow:
 
                     DirectFittingManagerWindow fittingMgr = Cache.Instance.DirectEve.Windows.OfType<DirectFittingManagerWindow>().FirstOrDefault();
+
                     //open it again ?
                     if (fittingMgr == null)
                     {
-                        Logging.Log("SwitchShip", "Opening fitting manager", Logging.white);
+                        Logging.Log("SwitchShip", "Opening fitting manager", Logging.White);
                         Cache.Instance.DirectEve.OpenFitingManager();
                     }
+
                     //check if it's ready
                     else if (fittingMgr.IsReady)
                     {
@@ -109,7 +114,7 @@ namespace Questor.Modules.Actions
                     fittingMgr = Cache.Instance.DirectEve.Windows.OfType<DirectFittingManagerWindow>().FirstOrDefault();
                     if (fittingMgr != null)
                     {
-                        Logging.Log("SwitchShip", "Looking for fitting " + defaultFitting, Logging.white);
+                        Logging.Log("SwitchShip", "Looking for fitting " + defaultFitting, Logging.White);
 
                         foreach (DirectFitting fitting in fittingMgr.Fittings)
                         {
@@ -118,10 +123,11 @@ namespace Questor.Modules.Actions
                             if (defaultFitting.ToLower().Equals(fitting.Name.ToLower()) &&
                                 fitting.ShipTypeId == ship.TypeId)
                             {
-                                Logging.Log("SwitchShip", "Found fitting " + fitting.Name, Logging.white);
+                                Logging.Log("SwitchShip", "Found fitting " + fitting.Name, Logging.White);
+
                                 //switch to the requested fitting for the current mission
                                 fitting.Fit();
-                                _lastSwitchShipAction = DateTime.Now;
+                                _lastSwitchShipAction = DateTime.UtcNow;
                                 Cache.Instance.CurrentFit = fitting.Name;
                                 _States.CurrentSwitchShipState = SwitchShipState.WaitForFitting;
                                 break;
@@ -133,22 +139,29 @@ namespace Questor.Modules.Actions
                     break;
 
                 case SwitchShipState.WaitForFitting:
+
                     //let's wait 10 seconds
-                    if (DateTime.Now.Subtract(_lastSwitchShipAction).TotalMilliseconds > Time.Instance.FittingWindowLoadFittingDelay_seconds &&
+                    if (DateTime.UtcNow.Subtract(_lastSwitchShipAction).TotalMilliseconds > Time.Instance.FittingWindowLoadFittingDelay_seconds &&
                         Cache.Instance.DirectEve.GetLockedItems().Count == 0)
                     {
                         //we should be done fitting, proceed to the next state
                         _States.CurrentSwitchShipState = SwitchShipState.Done;
                         fittingMgr = Cache.Instance.DirectEve.Windows.OfType<DirectFittingManagerWindow>().FirstOrDefault();
                         if (fittingMgr != null) fittingMgr.Close();
-                        Logging.Log("SwitchShip", "Done fitting", Logging.white);
+                        Logging.Log("SwitchShip", "Done fitting", Logging.White);
                     }
-                    else Logging.Log("SwitchShip", "Waiting for fitting. time elapsed = " + DateTime.Now.Subtract(_lastSwitchShipAction).TotalMilliseconds + " locked items = " + Cache.Instance.DirectEve.GetLockedItems().Count, Logging.white);
+                    else Logging.Log("SwitchShip", "Waiting for fitting. time elapsed = " + DateTime.UtcNow.Subtract(_lastSwitchShipAction).TotalMilliseconds + " locked items = " + Cache.Instance.DirectEve.GetLockedItems().Count, Logging.White);
                     break;
 
                 case SwitchShipState.NotEnoughAmmo:
-                    Logging.Log("SwitchShip", "Out of Ammo, checking a solution ...", Logging.white);
+                    Logging.Log("SwitchShip", "Out of Ammo, checking a solution ...", Logging.White);
                     break;
+
+                case SwitchShipState.Cleanup:
+                    if (!Cleanup.CloseInventoryWindows()) break;
+                    _States.CurrentSwitchShipState = SwitchShipState.Done;
+                    break;
+
             }
         }
     }

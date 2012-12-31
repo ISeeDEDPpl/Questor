@@ -74,8 +74,6 @@
       <DependentUpon>ValueDumpUI.cs</DependentUpon>
     </Compile>
     <Compile Include="ListViewColumnSorter.cs" />
-    <Compile Include="InvTypeMarket.cs" />
-    <Compile Include="ItemCacheMarket.cs" />
     <Compile Include="ValueDump.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="ValueDumpUI.resx">

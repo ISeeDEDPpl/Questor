@@ -1,31 +1,57 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <settings>
   <!--                                                -->
-  <!--         DEBUG SETTINGS         -->
+  <!--         DEBUG SETTINGS        -->
   <!--                                                -->
   
-  <!-- debugStates: creates more verbose logging: use for debugging purposes only -->
-  <debugStates>false</debugStates>  <!-- default is false -->
-  <!-- debugPerformance: creates more verbose logging: use for debugging purposes only -->
-  <debugPerformance>false</debugPerformance>  <!-- default is false -->
-  <!-- debugCurrentTarget: Shows detailed Shields and Armor levels for the currenttarget as things get killed (or not) -->  
-  <detailedCurrentTargetHealthLogging>false</detailedCurrentTargetHealthLogging>
-  <debugLootWrecks>false</debugLootWrecks>
+  <debugActivateGate>false</debugActivateGate>
   <debugActivateWeapons>false</debugActivateWeapons>
-  <debugreloadorChangeAmmo>false</debugreloadorChangeAmmo>
-  <debugStatistics>false</debugStatistics>
-  <debugGotobase>false</debugGotobase>
-  <debugIdle>false</debugIdle>
-  <debugAutoStart>false</debugAutoStart>
-  <debugDecline>false</debugDecline>
-  <debugHangars>false</debugHangars>
-  <debugLogging>false</debugLogging>
-  <debugSalvage>false</debugSalvage>
-  <debugUI>false</debugUI>
-  <debugReloadAll>false</debugReloadAll>
+  <debugAgentInteractionReplyToAgent>false</debugAgentInteractionReplyToAgent>
+  <debugAllMissionsOnBlackList>false</debugAllMissionsOnBlackList>
+  <debugAllMissionsOnGreyList>false</debugAllMissionsOnGreyList>
+  <debugArm>false</debugArm>
   <debugAttachVSDebugger>false</debugAttachVSDebugger>
+  <debugAutoStart>false</debugAutoStart>
+  <debugBlackList>false</debugBlackList>
+  <debugCargoHold>false</debugCargoHold>
+  <debugCleanup>false</debugCleanup>
+  <debugDecline>false</debugDecline>
+  <debugDefense>false</debugDefense>
+  <debugDroneHealth>false</debugDroneHealth>
+  <debugExceptions>false</debugExceptions>
+  <debugFittingMgr>false</debugFittingMgr>
+  <debugGotobase>false</debugGotobase>
+  <debugGreyList>false</debugGreyList>
+  <debugHangars>false</debugHangars>
+  <debugIdle>false</debugIdle>
+  <debugItemHangar>false</debugItemHangar>
+  <debugLoadScripts>false</debugLoadScripts>
+  <debugLogging>false</debugLogging>
+  <debugLootWrecks>false</debugLootWrecks>
+  <debugLootValue>false</debugLootValue>
+  <debugMaintainConsoleLogs>false</debugMaintainConsoleLogs>
+  <debugMissionFittings>false</debugMissionFittings>
+  <debugMoveTo>false</debugMoveTo>
+  <debugNavigateOnGrid>false</debugNavigateOnGrid>
+  <debugOnframe>false</debugOnframe>
+  <debugPerformance>false</debugPerformance>
+  <debugQuestorManager>false</debugQuestorManager>
+  <debugReloadAll>false</debugReloadAll>
+  <debugReloadorChangeAmmo>false</debugReloadorChangeAmmo>
+  <debugSalvage>false</debugSalvage>
+  <debugScheduler>false</debugScheduler>
+  <debugStates>false</debugStates>
+  <debugStatistics>false</debugStatistics>
+  <debugStorylineMissions>false</debugStorylineMissions>
+  <debugTraveler>false</debugTraveler>
+  <debugTractorBeams>false</debugTractorBeams>
+  <debugUI>false</debugUI>
+  <debugUnloadLoot>false</debugUnloadLoot>
+  <debugValuedump>false</debugValuedump>
+  <detailedCurrentTargetHealthLogging>false</detailedCurrentTargetHealthLogging>
+  <defendWhileTraveling>true</defendWhileTraveling>
   <useInnerspace>true</useInnerspace>
-  
+  <setEveClientDestinationWhenTraveling>false</setEveClientDestinationWhenTraveling>
   
   <!--                                                -->
   <!--          MISC SETTINGS          -->
@@ -41,6 +67,8 @@
   <minimumDelay>20</minimumDelay><!-- default is 20 -->
   <!-- RandomDelay is a number and is a random amount of seconds it will wait between getting missions in station added with minimumdelay or by itself -->
   <randomDelay>45</randomDelay><!-- default is 45 -->
+  <!-- Use Station repair Service if it exists-->
+  <useStationRepair>true</useStationRepair>
   
   <!--                                                -->
   <!--   CONSOLE LOG SETTINGS   -->
@@ -71,12 +99,12 @@
   <!-- AGENT AND MISSION SETTINGS -->
   <!--                                                         -->
   
-  <!-- Wait for mission decline timer to expire before declining again -->
-  <waitDecline>true</waitDecline>
-  <!-- MinAgentBlackListStandings is a number between -10 and 10 and is used for WaitDecline if WaitDecline is true, MinAgentBlackListStandings will only kick in if your standings have gone below MinAgentBlackListStandings -->
-  <minAgentBlackListStandings>-2.5</minAgentBlackListStandings>
+  <!-- Wait for you agents mission decline timer to expire before declining again -->
+  <waitDecline>false</waitDecline>
+  <!-- MinAgentBlackListStandings is a number between -10 and 10, if your standings have gone below MinAgentBlackListStandings you will wait between declines for the agent cooldown timer to expire -->
+  <minAgentBlackListStandings>5.5</minAgentBlackListStandings>
   <!-- MinAgentGreyListStandings is a number between -10 and 10 and is used to determine if you can decline more greylist missions, Once you drop below this threshold greylist missions will be accepted in order to keep your standings up -->
-  <minAgentGreyListStandings>-1.7</minAgentGreyListStandings>
+  <minAgentGreyListStandings>6.0</minAgentGreyListStandings>
   <!-- Missionspath is a string and is used for the path in /.net programs/ to point questor to where you want it to use the mission xmls from -->
   <missionsPath>Caldari Missions</missionsPath><!-- needs to be customized -->
   <!-- Run missions that take us into low security space? - READ: DANGEROUS!!! -->
@@ -87,7 +115,7 @@
   <requireMissionXML>false</requireMissionXML>
   <!-- agentsList is used when WaitDecine is true and your standings have gone below MinStandings, it will switch to a lower priority agent, need to be filled out for at least one agent -->
   <agentsList>
-    <agentList name="" priority="0" /><!-- needs to be customized -->
+    <agentList name="ThisIsTheNameOfMyAgentReplaceMe" priority="0" /><!-- needs to be customized -->
     <!-- <agentList name="" priority="1" /> -->
     <!-- <agentList name="" priority="2" /> -->
     <!-- <agentList name="" priority="3" /> -->
@@ -118,16 +146,16 @@
   <!--                                                -->
   <!--              SHIP NAMES             -->
   <!--                                                -->
-  <!-- Ship used for combat missions, empty means current ship  -->
+  <!-- Ship used for combat missions - required-->
   <combatShipName></combatShipName><!-- needs to be customized -->
-  <!-- Ship used for after mission salvaging, empty means current ship -->
+  <!-- Ship used for after mission salvaging - required if salvaging -->
   <salvageShipName></salvageShipName><!-- needs to be customized-->
   <!-- Ship used for Enemy Abound 2of5 -->
   <transportShipName></transportShipName><!-- needs to be customized-->
 
   
   <!--                                                                                                     -->
-  <!-- STORAGE LOCATION FOR LOOT, AMNMO AND BOOKMARKS -->
+  <!-- STORAGE LOCATION FOR LOOT, AMMO AND BOOKMARKS -->
   <!--                                                                                                     -->
 
   <!-- Corporation hangar to use for loot (empty is personal hangar) -->
@@ -174,12 +202,18 @@
        and the action is finished as soon as the mission item is in the ship's cargo, if turned
        on then the bot will loot all wrecks/cans before finishing the loot-action -->
   <lootEverything>true</lootEverything>
+  <!-- lootOnlyWhatYouCanWithoutSlowingDownMissionCompletion if true will ignore the lootEverything setting and will loot 'on the fly' but will not slow down to finish looting -->
+  <!-- questor will only loot in the background and will happily finish pockets that have loot still in them, use loot (to loot the field) or lootitem (to get a specific item only) actions as needed -->
+  <lootOnlyWhatYouCanWithoutSlowingDownMissionCompletion>false</lootOnlyWhatYouCanWithoutSlowingDownMissionCompletion>
   <!-- This is the age bookmarks have to reach in minutes before the dedicated salvager will attempt to use the bookmark: expressed in minutes -->
   <!-- It is HIGHLY recommended that you leave this at greater than 30 min - wrecks roughly (exactly?) 2 hours -->
   <ageofBookmarksForSalvageBehavior>45</ageofBookmarksForSalvageBehavior>
   <!-- Any bookmarks over this age will be deleted without warping there first because the wrecks despawn after ~2 hours anyway: expressed in minutes-->
   <ageofSalvageBookmarksToExpire>120</ageofSalvageBookmarksToExpire>
-
+  <moveCommonMissionCompletionItemsToAmmoHangar>false</moveCommonMissionCompletionItemsToAmmoHangar>
+  <moveCommonMissionCompletionItemsToItemsHangar>true</moveCommonMissionCompletionItemsToItemsHangar>
+  
+  
   <!--                                                -->
   <!--    UNDOCKING SETTINGS     -->
   <!--                                                -->
@@ -207,6 +241,7 @@
   <CloseQuestorArbitraryOSCmd>false</CloseQuestorArbitraryOSCmd> <!-- default is: false -->
   <CloseQuestorOSCmdContents></CloseQuestorOSCmdContents> <!-- contains the command to be executed, must be valid in a cmd shell executed in the IS directory -->
 
+  <MinimizeEveAfterStartingUp>false</MinimizeEveAfterStartingUp>  <!-- default is: false -->
   
   <LoginQuestorArbitraryOSCmd>false</LoginQuestorArbitraryOSCmd> <!-- default is: false -->
   <LoginQuestorOSCmdContents></LoginQuestorOSCmdContents> <!-- contains the command to be executed, must be valid in a cmd shell executed in the IS directory -->
@@ -229,6 +264,8 @@
   <!--                                                                                                                                                   -->
   <!--      Logging Options: All logs are in ./.Net Programs/Logs/<CharacterName>/<optionalsubdirectory> -->
   <!--                                                                                                                                                   -->
+  <!-- console logs older than this many days will be removed, it is recommended that you leave this setting as is -->
+  <consoleLogDaysOfLogsToKeep>14</consoleLogDaysOfLogsToKeep>
   <!-- Enable or Disable the SessionsLog that tracks Logins / Logoffs and overall session stats for questor -->
   <SessionsLog>true</SessionsLog><!-- default is: true -->
   <!-- Enable or Disable the DroneStatsLog that tracks drone losses -->
@@ -286,6 +323,44 @@
   <!-- Maximum number of targets per value -->
   <maximumHighValueTargets>4</maximumHighValueTargets><!-- default is 4 -->
   <maximumLowValueTargets>3</maximumLowValueTargets><!-- default is 3 -->
+
+  <!--                                                -->
+  <!--      SCRIPT SETTINGS         -->
+  <!--                                                -->
+
+  <!--                                                                                       -->
+  <!-- Script Settings - TypeIDs for the scripts you would like to use in these modules      -->
+  <!--                                                                                       -->
+  <!-- 29007 Tracking Speed Disruption Script // tracking disruptor                          -->
+  <!-- 29005 Optimal Range Disruption Script  // tracking disruptor                          -->
+  <!-- 29011 Scan Resolution Script           // sensor booster                              -->
+  <!-- 29009 Targeting Range Script           // sensor booster                              -->
+  <!-- 29015 Targeting Range Dampening Script // sensor dampner                              -->
+  <!-- 29013 Scan Resolution Dampening Script // sensor dampner                              -->
+  <!-- 29001 Tracking Speed Script            // tracking enhancer and tracking computer     -->
+  <!-- 28999 Optimal Range Script             // tracking enhancer and tracking computer     -->
+
+  <!-- 3554  Cap Booster 100 -->
+  <!-- 11283 Cap Booster 150 -->
+  <!-- 11285 Cap Booster 200 -->
+  <!-- 263   Cap Booster 25 -->
+  <!-- 11287 Cap Booster 400 -->
+  <!-- 264   Cap Booster 50 -->
+  <!-- 3552  Cap Booster 75 -->
+  <!-- 11289 Cap Booster 800 -->
+  <!-- 31982 Navy Cap Booster 100 -->
+  <!-- 31990 Navy Cap Booster 150 -->
+  <!-- 31998 Navy Cap Booster 200 -->
+  <!-- 32006 Navy Cap Booster 400 -->
+  <!-- 32014 Navy Cap Booster 800 -->
+				   
+  <trackingDisruptorScript>29007</trackingDisruptorScript>
+  <trackingComputerScript>29001</trackingComputerScript>
+  <trackingLinkScript>29001</trackingLinkScript>
+  <sensorBoosterScript>29009</sensorBoosterScript>
+  <sensorDampenerScript>29015</sensorDampenerScript>
+  <ancillaryShieldBoosterScript>11289</ancillaryShieldBoosterScript>
+  <capacitorInjectorScript>11289</capacitorInjectorScript>
 
   <!--                                                -->
   <!--      MOVEMENT SETTINGS    -->
@@ -361,11 +436,27 @@
   <longRangeDroneRecallCapacitorPct>30</longRangeDroneRecallCapacitorPct>
   <!-- Drones normally kill low value targets (frigates) first. If you would prefer your drones to kill high value targets first set this to true -->
   <dronesKillHighValueTargets>false</dronesKillHighValueTargets>
-  <!-- When docked drones below this number of hitpoints will be removed from your drone bay and put in the loothangar - so they can be manually repaired (we cannot auto repair them) -->
-  <belowThisHealthLevelRemoveFromDroneBay>150</belowThisHealthLevelRemoveFromDroneBay> <!-- light drones have a total of about 300 HP -->
+
   <!--                                                        -->
-  <!-- MISSION BLACKLIST SETTINGS -->
+  <!-- EMAIL SETTINGS                         -->
   <!--                                                        -->
+  <emailSupport>false</emailSupport>
+  <emailAddress></emailAddress>
+  <emailPassword></emailPassword>
+  <emailSMTPServer></emailSMTPServer> <!--  ex: mail.myEmailProvider.com-->
+  <emailSMTPPort>25</emailSMTPPort>
+  <emailAddressToSendAlerts></emailAddressToSendAlerts>
+  <emailEnableSSL>false</emailEnableSSL>
+  
+  <!--                                                        -->
+  <!-- SKILL TRAINING SETTINGS       -->
+  <!--                                                        -->
+  <!-- If there is another toon on this account training at the moment this should be false -->
+  <thisToonShouldBeTrainingSkills>true</thisToonShouldBeTrainingSkills>
+  
+  <!--                                                          -->
+  <!-- MISSION BLACKLIST SETTINGS  -->
+  <!--                                                          -->
 
     <!-- List of factions which the bot will try to avoid -->
   <factionblacklist>
@@ -393,8 +484,16 @@
   <!--                                                -->
   
   <!-- X Position of Questor Window -->
-  <windowXPosition>1600</windowXPosition><!-- needs to be customized -->
+  <windowXPosition>1</windowXPosition> <!-- needs to be customized -->
   <!-- Y Position of Questor Window -->
-  <windowYPosition>1050</windowYPosition><!-- needs to be customized -->
+  <windowYPosition>1</windowYPosition> <!-- needs to be customized -->
 
+  <!-- X Position of EVE Window -->
+  <eveWindowXPosition>0</eveWindowXPosition> <!-- blank leaves the EVE Window Untouched, if you want to use this you must define all 4 settings -->
+  <!-- Y Position of EVE Window -->
+  <eveWindowYPosition>0</eveWindowYPosition> <!-- blank leaves the EVE Window Untouched, if you want to use this you must define all 4 settings  -->
+  <!-- X Size of EVE Window -->
+  <eveWindowXSize>0</eveWindowXSize> <!-- blank leaves the EVE Window Untouched, if you want to use this you must to definel 4 settings -->
+  <!-- Y Size of EVE Window -->
+  <eveWindowYSize>0</eveWindowYSize> <!-- blank leaves the EVE Window Untouched, if you want to use this you must to definel 4 settings  -->
 </settings>

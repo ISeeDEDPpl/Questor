@@ -16,7 +16,6 @@ namespace Questor.Modules.Lookup
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
     using System.Xml.XPath;
@@ -38,18 +37,18 @@ namespace Questor.Modules.Lookup
             bool loadedAmmo = false;
 
             string missionName = Cache.Instance.FilterPath(Cache.Instance.Mission.Name);
-            Cache.Instance.missionXmlPath = Path.Combine(Settings.Instance.MissionsPath, missionName + ".xml");
+            Cache.Instance.MissionXmlPath = Path.Combine(Settings.Instance.MissionsPath, missionName + ".xml");
 
             Cache.Instance.MissionAmmo = new List<Ammo>();
-            if (File.Exists(Cache.Instance.missionXmlPath))
+            if (File.Exists(Cache.Instance.MissionXmlPath))
             {
-                Logging.Log("CombatMissionSettings", "Loading mission xml [" + missionName + "]", Logging.white);
+                Logging.Log("CombatMissionSettings", "Loading mission xml [" + missionName + "]", Logging.White);
                 //
                 // this loads the settings global to the mission, NOT individual pockets
                 //
                 try
                 {
-                    XDocument missionXml = XDocument.Load(Cache.Instance.missionXmlPath);
+                    XDocument missionXml = XDocument.Load(Cache.Instance.MissionXmlPath);
                     //load mission specific ammo and weapongroupid if specified in the mission xml
                     if (missionXml.Root != null)
                     {
@@ -73,15 +72,15 @@ namespace Questor.Modules.Lookup
                 }
                 catch (Exception ex)
                 {
-                    Logging.Log("CombatMissionSettings", "Error parsing damage types for mission [" + Cache.Instance.Mission.Name + "], " + ex.Message, Logging.white);
+                    Logging.Log("CombatMissionSettings", "Error parsing damage types for mission [" + Cache.Instance.Mission.Name + "], " + ex.Message, Logging.White);
                 }
             }
 
             if (!loadedAmmo)
             {
-                Logging.Log("CombatMissionSettings", "Detecting damage type for [" + missionName + "]", Logging.white);
                 Cache.Instance.DamageType = GetMissionDamageType(html);
                 LoadSpecificAmmo(new[] { Cache.Instance.DamageType });
+                Logging.Log("AgentInteraction", "Detected configured damage type for [" + missionName + "] is [" + Cache.Instance.DamageType + "]", Logging.Yellow);
             }
         }
 
@@ -108,12 +107,12 @@ namespace Questor.Modules.Lookup
                     }
                     else
                     {
-                        Logging.Log("CombatMissionSettings", "ERROR! unable to read [" + factionsXML + "]  no root element named <faction> ERROR!", Logging.red);
+                        Logging.Log("CombatMissionSettings", "ERROR! unable to read [" + factionsXML + "]  no root element named <faction> ERROR!", Logging.Red);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logging.Log("CombatMissionSettings", "ERROR! unable to find [" + factionsXML + "] ERROR! [" + ex.Message + "]", Logging.red);
+                    Logging.Log("CombatMissionSettings", "ERROR! unable to find [" + factionsXML + "] ERROR! [" + ex.Message + "]", Logging.Red);
                 }
             }
 
