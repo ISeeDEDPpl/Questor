@@ -66,6 +66,7 @@
                                {"Eradication", new GenericCourier()},
                                {"Evacuation", new GenericCourier()},
                                {"The Natural Way", new GenericCourier()},
+                               {"The Creeping Cold", new GenericCourier()},
                                /* COURIER/DELIVERY - MINMATAR */
                                {"Very Important Pirates", new GenericCourier()},
                                {"A Cargo With Attitude", new GenericCourier()},
@@ -107,6 +108,7 @@
                                {"Whispers in the Dark - First Contact (1 of 4)", new GenericCombatStoryline()},
                                {"Whispers in the Dark - Lay and Pray (2 of 4)", new GenericCombatStoryline()},
                                {"Whispers in the Dark - The Outpost (4 of 4)", new GenericCombatStoryline()},
+                               {"Inspired", new GenericCombatStoryline()},
                                /* COMBAT - MINMATAR */
                                {"Amarrian Excavators", new GenericCombatStoryline()},
                                {"Diplomatic Incident", new GenericCombatStoryline()},
