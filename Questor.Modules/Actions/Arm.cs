@@ -493,6 +493,7 @@ namespace Questor.Modules.Actions
                             }
 
                             //let's check first if we need to change fitting at all
+                            /*  Deactivate this for now, so Fitting specific items will get refiled (Cap Booster for example)
                             Logging.Log("Arm.LoadFitting", "Fitting: " + Cache.Instance.Fitting + " - currentFit: " + Cache.Instance.CurrentFit, Logging.White);
                             if (Cache.Instance.Fitting.Equals(Cache.Instance.CurrentFit))
                             {
@@ -500,6 +501,7 @@ namespace Questor.Modules.Actions
                                 _States.CurrentArmState = ArmState.MoveDrones;
                                 return;
                             }
+                             */ 
 
                             if (!Cache.Instance.OpenFittingManagerWindow("Arm.LoadFitting")) return;
 

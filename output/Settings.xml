@@ -393,6 +393,8 @@
   <activateRepairModules>65</activateRepairModules>
   <!-- Deactivate shield booster or armor rep when shields/armor are above this percentage -->
   <deactivateRepairModules>95</deactivateRepairModules>
+  <!-- Use cap injector when below this percentage -->
+  <injectcapperc>60</injectcapperc>
   
   <!--                                                -->
   <!--          PANIC SETTINGS         -->
