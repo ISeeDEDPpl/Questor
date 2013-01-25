@@ -360,7 +360,7 @@ namespace Questor.Modules.Lookup
         public int SensorDampenerScript { get; private set; }
         public int AncillaryShieldBoosterScript { get; private set; } //they are not scripts, but they work the same, but are consumable for ourpurposes that does not matter
         public int CapacitorInjectorScript { get; private set; }      //they are not scripts, but they work the same, but are consumable for ourpurposes that does not matter
-
+        public int CapBoosterToLoad { get; private set; } 
         //
         // Speed and Movement Settings
         //
@@ -833,6 +833,7 @@ namespace Questor.Modules.Lookup
                 SensorDampenerScript = 29015;
                 AncillaryShieldBoosterScript = 11289;
                 CapacitorInjectorScript = 11289;
+                CapBoosterToLoad = 15;
 
                 //
                 // Speed and Movement Settings
@@ -1322,6 +1323,7 @@ namespace Questor.Modules.Lookup
                     SensorDampenerScript = (int?)xml.Element("sensorDampenerScript") ?? (int)TypeID.TargetingRangeDampeningScript;
                     AncillaryShieldBoosterScript = (int?)xml.Element("ancillaryShieldBoosterScript") ?? (int)TypeID.AncillaryShieldBoosterScript;
                     CapacitorInjectorScript = (int?)xml.Element("capacitorInjectorScript") ?? (int)TypeID.CapacitorInjectorScript;
+                    CapBoosterToLoad = (int?)xml.Element("capacitorInjectorToLoad") ?? 15;
 
                     //
                     // Speed and Movement Settings
