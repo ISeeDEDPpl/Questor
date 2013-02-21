@@ -23,6 +23,7 @@ namespace Questor.Modules.Lookup
     using Questor.Modules.Caching;
     using Questor.Modules.Logging;
     using Questor.Modules.States;
+    using System.Xml;
 
     public class Settings
     {
@@ -980,7 +981,12 @@ namespace Questor.Modules.Lookup
             else //if the settings file exists - load the characters settings XML
             {
                 Settings.Instance.CharacterXMLExists = true;
-                XElement xml = XDocument.Load(Settings.Instance.SettingsPath).Root;
+                XElement xml;
+                using (var reader = new XmlTextReader(Settings.Instance.SettingsPath))
+                {
+                    reader.EntityHandling = EntityHandling.ExpandEntities;
+                    xml = XDocument.Load(reader).Root;
+                }
                 if (xml == null)
                 {
                     Logging.Log("Settings", "unable to find [" + Settings.Instance.SettingsPath +
