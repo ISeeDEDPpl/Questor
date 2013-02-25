@@ -383,7 +383,7 @@ namespace Questor.Modules.Caching
         public string MissionXmlPath { get; set; }
 
         public XDocument InvTypes;
-        public XDocument invIgnore;
+        public XDocument InvIgnore;
         public string Path;
 
         public bool _isCorpInWar = false;
@@ -3561,8 +3561,12 @@ namespace Questor.Modules.Caching
 
                     if (CorpHangarName != string.Empty) //&& Cache.Instance.AmmoHangarID == -99)
                     {
+                        Cache.Instance.AmmoHangarID = -99;
+                        Cache.Instance.AmmoHangarID = Cache.Instance.DirectEve.GetCorpHangarId(Settings.Instance.AmmoHangar); //- 1;
+                        if (Settings.Instance.DebugHangars) Logging.Log("GetCorpAmmoHangarID", "AmmoHangarID is [" + Cache.Instance.AmmoHangarID + "]", Logging.Teal);
+                        
                         Cache.Instance.AmmoHangar = null;
-                        Cache.Instance.AmmoHangar = Cache.Instance.DirectEve.GetCorporationHangar(CorpHangarName);
+                        Cache.Instance.AmmoHangar = Cache.Instance.DirectEve.GetCorporationHangar((int)Cache.Instance.AmmoHangarID);
                         if (Cache.Instance.AmmoHangar.IsValid)
                         {
                             if (Settings.Instance.DebugHangars) Logging.Log("GetCorpAmmoHangarID", "AmmoHangar contains [" + Cache.Instance.AmmoHangar.Items.Count() + "] Items", Logging.White);
@@ -3572,9 +3576,6 @@ namespace Questor.Modules.Caching
                             //if (Settings.Instance.DebugHangars) Logging.Log("GetCorpAmmoHangarID", "AmmoHangar Volume [" + Cache.Instance.AmmoHangar.Volume + "]", Logging.White);
                         }
 
-                        Cache.Instance.AmmoHangarID = -99;
-                        Cache.Instance.AmmoHangarID = Cache.Instance.DirectEve.GetCorpHangarId(Settings.Instance.AmmoHangar) - 1;
-                        if (Settings.Instance.DebugHangars) Logging.Log("GetCorpAmmoHangarID", "AmmoHangarID is [" + Cache.Instance.AmmoHangarID + "]", Logging.Teal);
                         return true;
                     }
                     return true;
@@ -3608,8 +3609,12 @@ namespace Questor.Modules.Caching
 
                     if (CorpHangarName != string.Empty) //&& Cache.Instance.LootHangarID == -99)
                     {
+                        Cache.Instance.LootHangarID = -99;
+                        Cache.Instance.LootHangarID = Cache.Instance.DirectEve.GetCorpHangarId(Settings.Instance.LootHangar);  //- 1;
+                        if (Settings.Instance.DebugHangars) Logging.Log("GetCorpLootHangarID", "LootHangarID is [" + Cache.Instance.LootHangarID + "]", Logging.Teal);
+
                         Cache.Instance.LootHangar = null;
-                        Cache.Instance.LootHangar = Cache.Instance.DirectEve.GetCorporationHangar(CorpHangarName);
+                        Cache.Instance.LootHangar = Cache.Instance.DirectEve.GetCorporationHangar((int)Cache.Instance.LootHangarID);
                         if (Cache.Instance.LootHangar.IsValid)
                         {
                             if (Settings.Instance.DebugHangars) Logging.Log("GetCorpLootHangarID", "LootHangar contains [" + Cache.Instance.LootHangar.Items.Count() + "] Items", Logging.White);
@@ -3619,9 +3624,6 @@ namespace Questor.Modules.Caching
                             //if (Settings.Instance.DebugHangars) Logging.Log("GetCorpLootHangarID", "LootHangar Volume [" + Cache.Instance.LootHangar.Volume + "]", Logging.White);
                         }
 
-                        Cache.Instance.LootHangarID = -99;
-                        Cache.Instance.LootHangarID = Cache.Instance.DirectEve.GetCorpHangarId(Settings.Instance.LootHangar) - 1;
-                        if (Settings.Instance.DebugHangars) Logging.Log("GetCorpLootHangarID", "LootHangarID is [" + Cache.Instance.LootHangarID + "]", Logging.Teal);
                         return true;
                     }
                     return true;
@@ -3653,7 +3655,6 @@ namespace Questor.Modules.Caching
                 {
                     if (!string.IsNullOrEmpty(Settings.Instance.AmmoHangar)) //do we have the corp hangar setting setup?
                     {
-                        if (!Cache.Instance.CloseAmmoHangar("OpenCorpAmmoHangar")) return false;
                         if (!Cache.Instance.CloseLootHangar("OpenCorpAmmoHangar")) return false;
                         if (!Cache.Instance.GetCorpAmmoHangarID()) return false;
 
@@ -3855,18 +3856,21 @@ namespace Questor.Modules.Caching
 
                         if (Cache.Instance.LootHangar != null && Cache.Instance.LootHangar.IsValid) //do we have a corp hangar tab setup with that name?
                         {
-                            if (Settings.Instance.DebugHangars) Logging.Log(module, "AmmoHangar is defined (no window needed)", Logging.DebugHangars);
+                            if (Settings.Instance.DebugHangars) Logging.Log(module, "LootHangar is defined (no window needed)", Logging.DebugHangars);
                             return true;
                         }
 
                         if (Cache.Instance.LootHangar == null)
                         {
                             if (!string.IsNullOrEmpty(Settings.Instance.LootHangar))
+                            {
                                 Logging.Log(module, "Opening Corporate Loot Hangar: failed! No Corporate Hangar in this station! lag?", Logging.Orange);
+                            }
+
                             return false;
                         }
 
-                        if (Settings.Instance.DebugHangars) Logging.Log(module, "AmmoHangar is not yet ready. waiting...", Logging.DebugHangars);
+                        if (Settings.Instance.DebugHangars) Logging.Log(module, "LootHangar is not yet ready. waiting...", Logging.DebugHangars);
                         return false;
                     }
 
@@ -5597,9 +5601,14 @@ namespace Questor.Modules.Caching
                         return false;
                     }
 
-                    Logging.Log(module, "Repairing Items", Logging.White);
-                    Logging.Log(module, "repairWindow.Html: " + repairWindow.Html, Logging.White);
-                    
+                    Logging.Log(module, "Repairing Items: repairWindow.AvgDamage: " + repairWindow.AvgDamage(), Logging.White);
+                    if (repairWindow.AvgDamage() == "Avg: 0.0 % Damaged")
+                    {
+                        repairWindow.Close();
+                        Cache.Instance.RepairAll = false;
+                        return true;
+                    }
+
                     repairWindow.RepairAll();
                     Cache.Instance.RepairAll = false;
                     NextRepairItemsAction = DateTime.UtcNow.AddSeconds(Settings.Instance.RandomNumber(2, 4));
@@ -5688,7 +5697,13 @@ namespace Questor.Modules.Caching
                         return false;
                     }
 
-                    Logging.Log(module, "Repairing Drones", Logging.White);
+                    Logging.Log(module, "Repairing Drones: repairWindow.AvgDamage: " + repairWindow.AvgDamage(), Logging.White);
+                    if (repairWindow.AvgDamage() == "Avg: 0.0 % Damaged")
+                    {
+                        repairWindow.Close();
+                        return true;
+                    }
+
                     repairWindow.RepairAll();
                     NextRepairDronesAction = DateTime.UtcNow.AddSeconds(Settings.Instance.RandomNumber(1, 2));
                     return false;

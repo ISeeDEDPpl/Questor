@@ -162,11 +162,11 @@ namespace Questor
 
         public void RunOnceAfterStartup()
         {
-            if (!_runOnce30SecAfterStartupalreadyProcessed && DateTime.UtcNow > Cache.Instance.QuestorStarted_DateTime.AddSeconds(30) && Cache.Instance.InStation && DateTime.UtcNow > Cache.Instance.LastInStation.AddSeconds(10))
+            if (!_runOnce30SecAfterStartupalreadyProcessed && DateTime.UtcNow > Cache.Instance.QuestorStarted_DateTime.AddSeconds(15) && Cache.Instance.InStation && DateTime.UtcNow > Cache.Instance.LastInSpace.AddSeconds(10))
             {
                 if (Settings.Instance.CharacterXMLExists && DateTime.UtcNow > Cache.Instance.NextStartupAction)
                 {
-                    if (!string.IsNullOrEmpty(Settings.Instance.AmmoHangar) || !string.IsNullOrEmpty(Settings.Instance.LootHangar))
+                    if (!string.IsNullOrEmpty(Settings.Instance.AmmoHangar) || !string.IsNullOrEmpty(Settings.Instance.LootHangar) && Cache.Instance.InStation)
                     {
                         Cache.Instance.DirectEve.ExecuteCommand(DirectCmd.OpenCorpHangar);
                     }

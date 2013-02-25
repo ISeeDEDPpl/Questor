@@ -133,7 +133,7 @@ namespace QuestorManager
             //
             try
             {
-                Cache.Instance.invIgnore = XDocument.Load(Settings.Instance.Path + "\\InvIgnore.xml"); //items to ignore
+                Cache.Instance.InvIgnore = XDocument.Load(Settings.Instance.Path + "\\InvIgnore.xml"); //items to ignore
             }
             catch (Exception exception)
             {

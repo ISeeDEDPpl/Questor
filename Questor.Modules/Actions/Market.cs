@@ -418,10 +418,10 @@ namespace Questor.Modules.Actions
 
             try
             {
-                // Do not sell items in invignore.xml
-                if (Cache.Instance.invIgnore.Root != null)
+                // Do not sell items in InvIgnore.xml
+                if (Cache.Instance.InvIgnore.Root != null)
                 {
-                    foreach (XElement element in Cache.Instance.invIgnore.Root.Elements("invtype"))
+                    foreach (XElement element in Cache.Instance.InvIgnore.Root.Elements("invtype"))
                     {
                         if (_currentItem.TypeId == (int)element.Attribute("id"))
                         {
@@ -433,7 +433,7 @@ namespace Questor.Modules.Actions
             }
             catch (Exception exception)
             {
-                if (Settings.Instance.DebugValuedump) Logging.Log(module, "invIgnore processing caused an exception [" + exception + "]", Logging.Debug);
+                if (Settings.Instance.DebugValuedump) Logging.Log(module, "InvIgnore processing caused an exception [" + exception + "]", Logging.Debug);
             }
 
             return true;

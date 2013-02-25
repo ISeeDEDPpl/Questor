@@ -196,6 +196,7 @@ namespace Questor.Modules.Caching
                 if (TypeId == 25373) return true;   // Militants
                 if (TypeId == 3810) return true;    // Marines
                 if (TypeId == 2076) return true;    // Gate Key
+                if (TypeId == 24576) return true;    // Imperial Navy Gate Permit
                 if (TypeId == 28260) return true;   // Zbikoki's Hacker Card
                 if (TypeId == 3814) return true;    // Reports
                 return false;
