@@ -23,6 +23,7 @@ namespace Questor.Modules.Lookup
     using Questor.Modules.Caching;
     using Questor.Modules.Logging;
     using Questor.Modules.States;
+    using System.Xml;
 
     public class Settings
     {
@@ -580,7 +581,7 @@ namespace Questor.Modules.Lookup
             bool reloadSettings = true;
             if (File.Exists(Settings.Instance.CharacterSettingsPath))
             {
-                reloadSettings = _lastModifiedDate != File.GetLastWriteTime(Settings.Instance.CharacterSettingsPath);   
+                reloadSettings = _lastModifiedDate != File.GetLastWriteTime(Settings.Instance.CharacterSettingsPath);
             }
 
             //if (File.Exists(Settings.Instance.CommonSettingsPath))
@@ -809,7 +810,7 @@ namespace Questor.Modules.Lookup
                 AmmoHangar = String.Empty;
                 BookmarkHangar = String.Empty;
                 LootContainer = String.Empty;
-                
+
                 //
                 // Loot and Salvage Settings
                 //
@@ -905,7 +906,7 @@ namespace Questor.Modules.Lookup
                 // If you enable the overloading of a slot it is HIGHLY recommended you actually have something overloadable in that slot =/ 
                 //
                 OverloadWeapons = false;
-                
+
                 //
                 // Speed and Movement Settings
                 //
@@ -983,9 +984,9 @@ namespace Questor.Modules.Lookup
                 UserDefinedLavishScriptScript1 = "";
                 UserDefinedLavishScriptScript1Description = "";
                 UserDefinedLavishScriptScript2 = "";
-                UserDefinedLavishScriptScript2Description = ""; 
+                UserDefinedLavishScriptScript2Description = "";
                 UserDefinedLavishScriptScript3 = "";
-                UserDefinedLavishScriptScript3Description = ""; 
+                UserDefinedLavishScriptScript3Description = "";
                 UserDefinedLavishScriptScript4 = "";
                 UserDefinedLavishScriptScript4Description = "";
 
@@ -1011,14 +1012,20 @@ namespace Questor.Modules.Lookup
             else //if the settings file exists - load the characters settings XML
             {
                 Settings.Instance.CharacterXMLExists = true;
-                XElement CharacterSettingsXml = XDocument.Load(Settings.Instance.CharacterSettingsPath).Root;
+                XElement CharacterSettingsXml;
+                using (var reader = new XmlTextReader(Settings.Instance.CharacterSettingsPath))
+                {
+                    reader.EntityHandling = EntityHandling.ExpandEntities;
+                    CharacterSettingsXml = XDocument.Load(reader).Root;
+                }
+
                 if (CharacterSettingsXml == null)
                 {
                     Logging.Log("Settings", "unable to find [" + Settings.Instance.CharacterSettingsPath + "] FATAL ERROR - use the provided settings.xml to create that file.", Logging.Red);
                 }
                 else
                 {
-                    Settings.Instance.CommonSettingsFileName = (string) CharacterSettingsXml.Element("commonSettingsFileName") ?? "common.xml";
+                    Settings.Instance.CommonSettingsFileName = (string)CharacterSettingsXml.Element("commonSettingsFileName") ?? "common.xml";
                     Settings.Instance.CommonSettingsPath = System.IO.Path.Combine(Settings.Instance.Path, Settings.Instance.CommonSettingsFileName);
 
                     XElement CommonSettingsXml;
@@ -1167,19 +1174,19 @@ namespace Questor.Modules.Lookup
                     //
                     //if (Settings.Instance.CharacterMode.ToLower() == "Combat Missions".ToLower())
                     //{
-                        MinAgentBlackListStandings = (float?)CharacterSettingsXml.Element("minAgentBlackListStandings") ?? (float?)CommonSettingsXml.Element("minAgentBlackListStandings") ?? (float)6.0;
-                        MinAgentGreyListStandings = (float?)CharacterSettingsXml.Element("minAgentGreyListStandings") ?? (float?)CommonSettingsXml.Element("minAgentGreyListStandings") ?? (float)5.0;
-                        WaitDecline = (bool?)CharacterSettingsXml.Element("waitDecline") ?? (bool?)CommonSettingsXml.Element("waitDecline") ?? false;
+                    MinAgentBlackListStandings = (float?)CharacterSettingsXml.Element("minAgentBlackListStandings") ?? (float?)CommonSettingsXml.Element("minAgentBlackListStandings") ?? (float)6.0;
+                    MinAgentGreyListStandings = (float?)CharacterSettingsXml.Element("minAgentGreyListStandings") ?? (float?)CommonSettingsXml.Element("minAgentGreyListStandings") ?? (float)5.0;
+                    WaitDecline = (bool?)CharacterSettingsXml.Element("waitDecline") ?? (bool?)CommonSettingsXml.Element("waitDecline") ?? false;
 
-                        var relativeMissionsPath = (string)CharacterSettingsXml.Element("missionsPath") ?? (string)CommonSettingsXml.Element("missionsPath");
-                        MissionsPath = System.IO.Path.Combine(Settings.Instance.Path, relativeMissionsPath);
-                        Logging.Log("Settings", "MissionsPath is: [" + MissionsPath + "]", Logging.White);
+                    var relativeMissionsPath = (string)CharacterSettingsXml.Element("missionsPath") ?? (string)CommonSettingsXml.Element("missionsPath");
+                    MissionsPath = System.IO.Path.Combine(Settings.Instance.Path, relativeMissionsPath);
+                    Logging.Log("Settings", "MissionsPath is: [" + MissionsPath + "]", Logging.White);
 
-                        RequireMissionXML = (bool?)CharacterSettingsXml.Element("requireMissionXML") ?? (bool?)CommonSettingsXml.Element("requireMissionXML") ?? false;
-                        AllowNonStorylineCourierMissionsInLowSec = (bool?)CharacterSettingsXml.Element("LowSecMissions") ?? (bool?)CommonSettingsXml.Element("LowSecMissions") ?? false;
-                        MaterialsForWarOreID = (int?)CharacterSettingsXml.Element("MaterialsForWarOreID") ?? (int?)CommonSettingsXml.Element("MaterialsForWarOreID") ?? 20;
-                        MaterialsForWarOreQty = (int?)CharacterSettingsXml.Element("MaterialsForWarOreQty") ?? (int?)CommonSettingsXml.Element("MaterialsForWarOreQty") ?? 8000;
-                        KillSentries = (bool?)CharacterSettingsXml.Element("killSentries") ?? (bool?)CommonSettingsXml.Element("killSentries") ?? false;
+                    RequireMissionXML = (bool?)CharacterSettingsXml.Element("requireMissionXML") ?? (bool?)CommonSettingsXml.Element("requireMissionXML") ?? false;
+                    AllowNonStorylineCourierMissionsInLowSec = (bool?)CharacterSettingsXml.Element("LowSecMissions") ?? (bool?)CommonSettingsXml.Element("LowSecMissions") ?? false;
+                    MaterialsForWarOreID = (int?)CharacterSettingsXml.Element("MaterialsForWarOreID") ?? (int?)CommonSettingsXml.Element("MaterialsForWarOreID") ?? 20;
+                    MaterialsForWarOreQty = (int?)CharacterSettingsXml.Element("MaterialsForWarOreQty") ?? (int?)CommonSettingsXml.Element("MaterialsForWarOreQty") ?? 8000;
+                    KillSentries = (bool?)CharacterSettingsXml.Element("killSentries") ?? (bool?)CommonSettingsXml.Element("killSentries") ?? false;
                     //}
 
                     //
@@ -1482,7 +1489,7 @@ namespace Questor.Modules.Lookup
                     // If you enable the overloading of a slot it is HIGHLY recommended you actually have something overloadable in that slot =/ 
                     //
                     OverloadWeapons = (bool?)CharacterSettingsXml.Element("overloadWeapons") ?? (bool?)CommonSettingsXml.Element("overloadWeapons") ?? false;
-                    
+
                     //
                     // Speed and Movement Settings
                     //
@@ -1548,7 +1555,7 @@ namespace Questor.Modules.Lookup
                     ThisToonShouldBeTrainingSkills = (bool?)CharacterSettingsXml.Element("thisToonShouldBeTrainingSkills") ?? (bool?)CommonSettingsXml.Element("thisToonShouldBeTrainingSkills") ?? true;
                     //This needs to be in your "Innerspace\Scripts\" Directory
                     SkillTrainerScript = (string)CharacterSettingsXml.Element("skillTrainerScript") ?? (string)CommonSettingsXml.Element("skillTrainerScript") ?? "skilltrainer.iss";
-                    
+
                     //
                     // User Defined LavishScript Scripts that tie to buttons in the UI
                     //
@@ -1587,37 +1594,37 @@ namespace Questor.Modules.Lookup
                     //
                     //if (Settings.Instance.CharacterMode.ToLower() == "Combat Missions".ToLower())
                     //{
-                        AgentsList.Clear();
-                        XElement agentList = CharacterSettingsXml.Element("agentsList") ?? CommonSettingsXml.Element("agentsList");
-                        
-                        if (agentList != null)
+                    AgentsList.Clear();
+                    XElement agentList = CharacterSettingsXml.Element("agentsList") ?? CommonSettingsXml.Element("agentsList");
+
+                    if (agentList != null)
+                    {
+                        if (agentList.HasElements)
                         {
-                            if (agentList.HasElements)
+                            int i = 0;
+                            foreach (XElement agent in agentList.Elements("agentList"))
                             {
-                                int i = 0;
-                                foreach (XElement agent in agentList.Elements("agentList"))
-                                {
-                                    AgentsList.Add(new AgentsList(agent));
-                                    i++;
-                                }
-                                if (i >= 2)
-                                {
-                                    MultiAgentSupport = true;
-                                    Logging.Log("Settings", "Found more than one agent in your character XML: MultiAgentSupport is [" + MultiAgentSupport.ToString(CultureInfo.InvariantCulture) + "]", Logging.White);
-                                }
-                                else
-                                {
-                                    MultiAgentSupport = false;
-                                    Logging.Log("Settings", "Found only one agent in your character XML: MultiAgentSupport is [" + MultiAgentSupport.ToString(CultureInfo.InvariantCulture) + "]", Logging.White);
-                                }
+                                AgentsList.Add(new AgentsList(agent));
+                                i++;
+                            }
+                            if (i >= 2)
+                            {
+                                MultiAgentSupport = true;
+                                Logging.Log("Settings", "Found more than one agent in your character XML: MultiAgentSupport is [" + MultiAgentSupport.ToString(CultureInfo.InvariantCulture) + "]", Logging.White);
                             }
                             else
                             {
-                                Logging.Log("Settings", "agentList exists in your characters config but no agents were listed.", Logging.Red);
+                                MultiAgentSupport = false;
+                                Logging.Log("Settings", "Found only one agent in your character XML: MultiAgentSupport is [" + MultiAgentSupport.ToString(CultureInfo.InvariantCulture) + "]", Logging.White);
                             }
                         }
                         else
-                            Logging.Log("Settings", "Error! No Agents List specified.", Logging.Red);
+                        {
+                            Logging.Log("Settings", "agentList exists in your characters config but no agents were listed.", Logging.Red);
+                        }
+                    }
+                    else
+                        Logging.Log("Settings", "Error! No Agents List specified.", Logging.Red);
 
                     //}
 
@@ -1683,45 +1690,45 @@ namespace Questor.Modules.Lookup
 
                     //if (Settings.Instance.CharacterMode.ToLower() == "Combat Missions".ToLower())
                     //{
-                        //
-                        // Mission Blacklist
-                        //
-                        MissionBlacklist.Clear();
-                        XElement xmlElementBlackListSection = CharacterSettingsXml.Element("blacklist") ?? CommonSettingsXml.Element("blacklist");
-                        if (xmlElementBlackListSection != null)
+                    //
+                    // Mission Blacklist
+                    //
+                    MissionBlacklist.Clear();
+                    XElement xmlElementBlackListSection = CharacterSettingsXml.Element("blacklist") ?? CommonSettingsXml.Element("blacklist");
+                    if (xmlElementBlackListSection != null)
+                    {
+                        Logging.Log("Settings", "Loading Mission Blacklist", Logging.White);
+                        int i = 1;
+                        foreach (XElement BlacklistedMission in xmlElementBlackListSection.Elements("mission"))
                         {
-                            Logging.Log("Settings", "Loading Mission Blacklist", Logging.White);
-                            int i = 1;
-                            foreach (XElement BlacklistedMission in xmlElementBlackListSection.Elements("mission"))
-                            {
-                                MissionBlacklist.Add((string) BlacklistedMission);
-                                if (Settings.Instance.DebugBlackList) Logging.Log("Settings.LoadBlackList", "[" + i + "] Blacklisted mission Name [" + (string) BlacklistedMission + "]", Logging.Teal);
-                                i++;
-                            }
-                            Logging.Log("Settings", "        Mission Blacklist now has [" + MissionBlacklist.Count + "] entries", Logging.White);
+                            MissionBlacklist.Add((string)BlacklistedMission);
+                            if (Settings.Instance.DebugBlackList) Logging.Log("Settings.LoadBlackList", "[" + i + "] Blacklisted mission Name [" + (string)BlacklistedMission + "]", Logging.Teal);
+                            i++;
                         }
+                        Logging.Log("Settings", "        Mission Blacklist now has [" + MissionBlacklist.Count + "] entries", Logging.White);
+                    }
                     //}
 
                     //if (Settings.Instance.CharacterMode.ToLower() == "Combat Missions".ToLower())
                     //{
-                        //
-                        // Mission Greylist
-                        //
-                        MissionGreylist.Clear();
-                        XElement xmlElementGreyListSection = CharacterSettingsXml.Element("greylist") ?? CommonSettingsXml.Element("greylist");
+                    //
+                    // Mission Greylist
+                    //
+                    MissionGreylist.Clear();
+                    XElement xmlElementGreyListSection = CharacterSettingsXml.Element("greylist") ?? CommonSettingsXml.Element("greylist");
 
-                        if (xmlElementGreyListSection != null)
+                    if (xmlElementGreyListSection != null)
+                    {
+                        Logging.Log("Settings", "Loading Mission Greylist", Logging.White);
+                        int i = 1;
+                        foreach (XElement GreylistedMission in xmlElementGreyListSection.Elements("mission"))
                         {
-                            Logging.Log("Settings", "Loading Mission Greylist", Logging.White);
-                            int i = 1;
-                            foreach (XElement GreylistedMission in xmlElementGreyListSection.Elements("mission"))
-                            {
-                                MissionGreylist.Add((string) GreylistedMission);
-                                if (Settings.Instance.DebugGreyList) Logging.Log("Settings.LoadGreyList", "[" + i + "] Greylisted mission Name [" + (string) GreylistedMission + "]", Logging.Teal);
-                                i++;
-                            }
-                            Logging.Log("Settings", "        Mission Greylist now has [" + MissionGreylist.Count + "] entries", Logging.White);
+                            MissionGreylist.Add((string)GreylistedMission);
+                            if (Settings.Instance.DebugGreyList) Logging.Log("Settings.LoadGreyList", "[" + i + "] Greylisted mission Name [" + (string)GreylistedMission + "]", Logging.Teal);
+                            i++;
                         }
+                        Logging.Log("Settings", "        Mission Greylist now has [" + MissionGreylist.Count + "] entries", Logging.White);
+                    }
                     //}
 
                     //
@@ -1838,7 +1845,7 @@ namespace Questor.Modules.Lookup
                     SettingsLoadedICount++;
                     if (Settings.Instance.CommonXMLExists) Logging.Log("Settings", "[" + SettingsLoadedICount + "] Done Loading Settings from [" + Settings.Instance.CommonSettingsPath + "] and", Logging.Green);
                     Logging.Log("Settings", "[" + SettingsLoadedICount + "] Done Loading Settings from [" + Settings.Instance.CharacterSettingsPath + "]", Logging.Green);
-                    
+
                     SettingsLoaded(this, new EventArgs());
                 }
             }

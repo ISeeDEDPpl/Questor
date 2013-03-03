@@ -843,7 +843,7 @@ namespace Questor.Modules.Actions
                     if (currentAgent != null) currentAgent.DeclineTimer = DateTime.UtcNow.AddSeconds(secondsToWait);
                     CloseConversation();
 
-                    Cache.Instance.CurrentAgent = Cache.Instance.SwitchAgent;
+                    Cache.Instance.CurrentAgent = Cache.Instance.SwitchAgent();
                     Cache.Instance.CurrentAgentText = Cache.Instance.CurrentAgent.ToString(CultureInfo.InvariantCulture);
                     Logging.Log("AgentInteraction", "new agent is " + Cache.Instance.CurrentAgent, Logging.Yellow);
                     _States.CurrentAgentInteractionState = AgentInteractionState.ChangeAgent;

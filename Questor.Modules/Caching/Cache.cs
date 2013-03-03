@@ -1207,7 +1207,7 @@ namespace Questor.Modules.Caching
                     {
                         try
                         {
-                            _agentName = SwitchAgent;
+                            _agentName = SwitchAgent();
                             Logging.Log("Cache.CurrentAgent", "[ " + CurrentAgent + " ] AgentID [ " + AgentId + " ]", Logging.White);
                             Cache.Instance.CurrentAgentText = CurrentAgent;
                         }
@@ -1228,10 +1228,33 @@ namespace Questor.Modules.Caching
             }
         }
 
-        public string SwitchAgent
+        private static readonly Func<DirectAgent, DirectSession, bool> AgentInThisSolarSystemSelector = (a, s) => a.SolarSystemId == s.SolarSystemId;
+        private static readonly Func<DirectAgent, DirectSession, bool> AgentInThisStationSelector = (a, s) => a.StationId == s.StationId;
+
+        private string SelectNearestAgent()
         {
-            get
+            var mission = DirectEve.AgentMissions.FirstOrDefault(x => x.State == (int)MissionState.Accepted && !x.Important);
+            if (mission == null)
             {
+                var selector = DirectEve.Session.IsInSpace ? AgentInThisSolarSystemSelector : AgentInThisStationSelector;
+                var nearestAgent = Settings.Instance.AgentsList
+                    .Select(x => new { Agent = x, DirectAgent = DirectEve.GetAgentByName(x.Name) })
+                    .FirstOrDefault(x => selector(x.DirectAgent, DirectEve.Session));
+                return nearestAgent != null ? nearestAgent.Agent.Name : Settings.Instance.AgentsList.OrderBy(j => j.Priorit).FirstOrDefault().Name;
+            }
+
+            return DirectEve.GetAgentById(mission.AgentId).Name;
+        }
+
+        public string SwitchAgent()
+        {
+            if (_agentName == "")
+            {
+                // it means that this is first switch for Questor, so we'll check missions, then station or system for agents.
+                AllAgentsStillInDeclineCoolDown = false;
+                return SelectNearestAgent();
+            }
+
                 AgentsList agent = Settings.Instance.AgentsList.OrderBy(j => j.Priorit).FirstOrDefault(i => DateTime.UtcNow >= i.DeclineTimer);
                 if (agent == null)
                 {
@@ -1252,7 +1275,6 @@ namespace Questor.Modules.Caching
                 if (agent != null) return agent.Name;
                 return null;
             }
-        }
 
         public long AgentId
         {
@@ -2373,8 +2395,8 @@ namespace Questor.Modules.Caching
                 if (Cache.Instance.IgnoreTargets.Contains(target.Name.Trim()) || _primaryWeaponPriorityTargets.Any(pwpt => pwpt.EntityID == target.Id || (_dronePriorityTargets.Any(dpt => dpt.EntityID == target.Id && Statistics.Instance.OutOfDronesCount == 0))))
                 {
                     continue;
-                }
-
+                }      
+                        
                 if (Cache.Instance.DoWeCurrentlyHaveTurretsMounted())
                 {
                     if (target.Velocity < Settings.Instance.SpeedNPCFrigatesShouldBeIgnoredByPrimaryWeapons
@@ -2387,7 +2409,7 @@ namespace Questor.Modules.Caching
                 else
                 {
                     Logging.Log("Panic", "Adding [" + target.Name + "][ID: " + Cache.Instance.MaskedID(target.Id) + "] as a PrimaryWeaponPriorityTarget", Logging.White);
-                    _primaryWeaponPriorityTargets.Add(new PriorityTarget { EntityID = target.Id, PrimaryWeaponPriority = priority });
+                _primaryWeaponPriorityTargets.Add(new PriorityTarget { EntityID = target.Id, PrimaryWeaponPriority = priority });
                 }
 
                 if (Statistics.Instance.OutOfDronesCount == 0 && Cache.Instance.UseDrones)
