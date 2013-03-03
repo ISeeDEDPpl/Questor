@@ -283,31 +283,25 @@ namespace Questor
 
             if (schedule.StartTime2Specified)
             {
-                if (DateTime.Now > schedule.Stop1 || DateTime.Now.DayOfYear > schedule.Stop1.DayOfYear) //if after schedule1 stoptime or the next day
+                if (schedule.Start2 > schedule.Stop2) schedule.Stop2 = schedule.Stop2.AddDays(1);
+                if (DateTime.Now.AddHours(2) > schedule.Start2 && DateTime.Now < schedule.Stop2)
                 {
-                    if (schedule.Start2 > schedule.Stop2) schedule.Stop2 = schedule.Stop2.AddDays(1);
-                    if (DateTime.Now.AddHours(2) > schedule.Start2 && DateTime.Now < schedule.Stop2)
-                    {
-                        StartTime = schedule.Start2;
-                        StopTime = schedule.Stop2;
-                        StopTimeSpecified = true;
-                        Logging.Log("Startup", "Schedule2: Start2: " + schedule.Start2 + " Stop2: " + schedule.Stop2, Logging.White);
-                    }
+                    StartTime = schedule.Start2;
+                    StopTime = schedule.Stop2;
+                    StopTimeSpecified = true;
+                    Logging.Log("Startup", "Schedule2: Start2: " + schedule.Start2 + " Stop2: " + schedule.Stop2, Logging.White);
                 }
             }
 
             if (schedule.StartTime3Specified)
             {
-                if (DateTime.Now > schedule.Stop2 || DateTime.Now.DayOfYear > schedule.Stop2.DayOfYear) //if after schedule2 stoptime or the next day
+                if (schedule.Start3 > schedule.Stop3) schedule.Stop3 = schedule.Stop3.AddDays(1);
+                if (DateTime.Now.AddHours(2) > schedule.Start3 && DateTime.Now < schedule.Stop3)
                 {
-                    if (schedule.Start3 > schedule.Stop3) schedule.Stop3 = schedule.Stop3.AddDays(1);
-                    if (DateTime.Now.AddHours(2) > schedule.Start3 && DateTime.Now < schedule.Stop3)
-                    {
-                        StartTime = schedule.Start3;
-                        StopTime = schedule.Stop3;
-                        StopTimeSpecified = true;
-                        Logging.Log("Startup", "Schedule3: Start3: " + schedule.Start3 + " Stop3: " + schedule.Stop3, Logging.White);
-                    }
+                    StartTime = schedule.Start3;
+                    StopTime = schedule.Stop3;
+                    StopTimeSpecified = true;
+                    Logging.Log("Startup", "Schedule3: Start3: " + schedule.Start3 + " Stop3: " + schedule.Stop3, Logging.White);
                 }
             }
 

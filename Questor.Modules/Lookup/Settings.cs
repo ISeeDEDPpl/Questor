@@ -257,6 +257,7 @@ namespace Questor.Modules.Lookup
         public bool SalvageMultipleMissionsinOnePass { get; set; }
         public bool FirstSalvageBookmarksInSystem { get; set; }
         public string BookmarkPrefix { get; set; }
+        public string BookmarkFolder { get; set; }
 
         public string TravelToBookmarkPrefix { get; set; }
 
@@ -821,6 +822,7 @@ namespace Questor.Modules.Lookup
                 CreateSalvageBookmarksIn = "Player"; //Player or Corp
                 //other setting is "Corp"
                 BookmarkPrefix = "Salvage:";
+                BookmarkFolder = "Salvage";
                 TravelToBookmarkPrefix = "MeetHere:";
                 MinimumWreckCount = 1;
                 AfterMissionSalvaging = false;
@@ -1348,6 +1350,7 @@ namespace Questor.Modules.Lookup
                         //Player or Corp
                         //other setting is "Corp"
                         BookmarkPrefix = (string)CharacterSettingsXml.Element("bookmarkPrefix") ?? (string)CommonSettingsXml.Element("bookmarkPrefix") ?? "Salvage:";
+                        BookmarkFolder = (string)CharacterSettingsXml.Element("bookmarkFolder") ?? (string)CommonSettingsXml.Element("bookmarkFolder") ?? "Salvage:";
                         TravelToBookmarkPrefix = (string)CharacterSettingsXml.Element("travelToBookmarkPrefix") ?? (string)CommonSettingsXml.Element("travelToBookmarkPrefix") ?? "MeetHere:";
                         MinimumWreckCount = (int?)CharacterSettingsXml.Element("minimumWreckCount") ?? (int?)CommonSettingsXml.Element("minimumWreckCount") ?? 1;
                         AfterMissionSalvaging = (bool?)CharacterSettingsXml.Element("afterMissionSalvaging") ?? (bool?)CommonSettingsXml.Element("afterMissionSalvaging") ?? false;

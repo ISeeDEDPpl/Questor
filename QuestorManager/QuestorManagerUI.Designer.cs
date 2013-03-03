@@ -32,6 +32,7 @@
             this.UpdateSearchResults = new System.Windows.Forms.Timer(this.components);
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.button4 = new System.Windows.Forms.Button();
             this.cmbXML = new System.Windows.Forms.ComboBox();
             this.bttnSaveTask = new System.Windows.Forms.Button();
             this.chkPause = new System.Windows.Forms.CheckBox();
@@ -127,27 +128,8 @@
             this.bttnTaskLineCmd = new System.Windows.Forms.Button();
             this.label17 = new System.Windows.Forms.Label();
             this.txtCmdLine = new System.Windows.Forms.TextBox();
-            this.tabPage7 = new System.Windows.Forms.TabPage();
-            this.groupBox7 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.OrdersListView = new System.Windows.Forms.ListView();
-            this.Name1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.Quantity = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.OrdersSearchList = new System.Windows.Forms.ListView();
-            this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.OrdersUnits = new System.Windows.Forms.TextBox();
-            this.OrdersSearch = new System.Windows.Forms.TextBox();
-            this.label20 = new System.Windows.Forms.Label();
-            this.label21 = new System.Windows.Forms.Label();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.radioButton3 = new System.Windows.Forms.RadioButton();
+            this.cbxSellOrder = new System.Windows.Forms.CheckBox();
+            this.cbxCorpOrder = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -160,10 +142,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.RefineEfficiencyInput)).BeginInit();
             this.tabPage5.SuspendLayout();
             this.tabPage6.SuspendLayout();
-            this.tabPage7.SuspendLayout();
-            this.groupBox7.SuspendLayout();
-            this.groupBox6.SuspendLayout();
-            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // UpdateSearchResults
@@ -180,7 +158,6 @@
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage6);
-            this.tabControl1.Controls.Add(this.tabPage7);
             this.tabControl1.Location = new System.Drawing.Point(1, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -189,6 +166,7 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.button4);
             this.tabPage1.Controls.Add(this.cmbXML);
             this.tabPage1.Controls.Add(this.bttnSaveTask);
             this.tabPage1.Controls.Add(this.chkPause);
@@ -206,6 +184,16 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(144, 216);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(108, 23);
+            this.button4.TabIndex = 30;
+            this.button4.Text = "Load Shopping List";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
             // cmbXML
             // 
@@ -284,7 +272,7 @@
             // LstTask
             // 
             this.LstTask.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LstTask.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.JobHeader1,
@@ -638,7 +626,8 @@
             "Drop",
             "Grab",
             "Buy",
-            "Sell"});
+            "Sell",
+            "BuyOrder"});
             this.cmbMode.Location = new System.Drawing.Point(333, 43);
             this.cmbMode.Name = "cmbMode";
             this.cmbMode.Size = new System.Drawing.Size(119, 21);
@@ -699,6 +688,8 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.cbxCorpOrder);
+            this.tabPage4.Controls.Add(this.cbxSellOrder);
             this.tabPage4.Controls.Add(this.chkUpdateMineral);
             this.tabPage4.Controls.Add(this.label8);
             this.tabPage4.Controls.Add(this.RefineEfficiencyInput);
@@ -824,7 +815,7 @@
             // lvItems
             // 
             this.lvItems.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lvItems.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.chName,
@@ -833,9 +824,9 @@
             this.chMedianBuy,
             this.chStationBuy,
             this.chTotalBuy});
-            this.lvItems.Location = new System.Drawing.Point(7, 57);
+            this.lvItems.Location = new System.Drawing.Point(7, 82);
             this.lvItems.Name = "lvItems";
-            this.lvItems.Size = new System.Drawing.Size(630, 179);
+            this.lvItems.Size = new System.Drawing.Size(630, 154);
             this.lvItems.TabIndex = 15;
             this.lvItems.UseCompatibleStateImageBehavior = false;
             this.lvItems.View = System.Windows.Forms.View.Details;
@@ -1136,215 +1127,25 @@
             this.txtCmdLine.Size = new System.Drawing.Size(468, 20);
             this.txtCmdLine.TabIndex = 0;
             // 
-            // tabPage7
+            // cbxSellOrder
             // 
-            this.tabPage7.Controls.Add(this.groupBox7);
-            this.tabPage7.Controls.Add(this.groupBox6);
-            this.tabPage7.Controls.Add(this.groupBox5);
-            this.tabPage7.Location = new System.Drawing.Point(4, 22);
-            this.tabPage7.Name = "tabPage7";
-            this.tabPage7.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage7.Size = new System.Drawing.Size(648, 245);
-            this.tabPage7.TabIndex = 6;
-            this.tabPage7.Text = "Orders";
-            this.tabPage7.UseVisualStyleBackColor = true;
+            this.cbxSellOrder.AutoSize = true;
+            this.cbxSellOrder.Location = new System.Drawing.Point(7, 57);
+            this.cbxSellOrder.Name = "cbxSellOrder";
+            this.cbxSellOrder.Size = new System.Drawing.Size(74, 17);
+            this.cbxSellOrder.TabIndex = 27;
+            this.cbxSellOrder.Text = "Use Order";
+            this.cbxSellOrder.UseVisualStyleBackColor = true;
             // 
-            // groupBox7
+            // cbxCorpOrder
             // 
-            this.groupBox7.Controls.Add(this.button1);
-            this.groupBox7.Controls.Add(this.comboBox1);
-            this.groupBox7.Location = new System.Drawing.Point(216, 6);
-            this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(421, 44);
-            this.groupBox7.TabIndex = 17;
-            this.groupBox7.TabStop = false;
-            this.groupBox7.Text = "Actions";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(340, 12);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 4;
-            this.button1.Text = "Add Task";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "FastBuy",
-            "UndercutLowest",
-            "Median",
-            "Average",
-            "UndercutAndWait"});
-            this.comboBox1.Location = new System.Drawing.Point(6, 15);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(119, 21);
-            this.comboBox1.TabIndex = 3;
-            this.comboBox1.Text = "Select Mode";
-            // 
-            // groupBox6
-            // 
-            this.groupBox6.Controls.Add(this.OrdersListView);
-            this.groupBox6.Controls.Add(this.button2);
-            this.groupBox6.Controls.Add(this.button3);
-            this.groupBox6.Controls.Add(this.OrdersSearchList);
-            this.groupBox6.Controls.Add(this.OrdersUnits);
-            this.groupBox6.Controls.Add(this.OrdersSearch);
-            this.groupBox6.Controls.Add(this.label20);
-            this.groupBox6.Controls.Add(this.label21);
-            this.groupBox6.Location = new System.Drawing.Point(7, 53);
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(630, 183);
-            this.groupBox6.TabIndex = 17;
-            this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "For Item";
-            // 
-            // OrdersListView
-            // 
-            this.OrdersListView.CheckBoxes = true;
-            this.OrdersListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.Name1,
-            this.Quantity,
-            this.columnHeader13});
-            this.OrdersListView.FullRowSelect = true;
-            this.OrdersListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.OrdersListView.Location = new System.Drawing.Point(241, 41);
-            this.OrdersListView.Name = "OrdersListView";
-            this.OrdersListView.Size = new System.Drawing.Size(381, 135);
-            this.OrdersListView.TabIndex = 13;
-            this.OrdersListView.UseCompatibleStateImageBehavior = false;
-            this.OrdersListView.View = System.Windows.Forms.View.Details;
-            // 
-            // Name1
-            // 
-            this.Name1.Text = "Name";
-            this.Name1.Width = 253;
-            // 
-            // Quantity
-            // 
-            this.Quantity.DisplayIndex = 2;
-            this.Quantity.Text = "Quantity";
-            this.Quantity.Width = 105;
-            // 
-            // columnHeader13
-            // 
-            this.columnHeader13.DisplayIndex = 1;
-            this.columnHeader13.Text = "ID";
-            this.columnHeader13.Width = 0;
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(492, 13);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(130, 23);
-            this.button2.TabIndex = 12;
-            this.button2.Text = "Load Clipboard CSV";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(367, 12);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(119, 24);
-            this.button3.TabIndex = 1;
-            this.button3.Text = "Add Item";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // OrdersSearchList
-            // 
-            this.OrdersSearchList.CheckBoxes = true;
-            this.OrdersSearchList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader10,
-            this.columnHeader11});
-            this.OrdersSearchList.FullRowSelect = true;
-            this.OrdersSearchList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.OrdersSearchList.Location = new System.Drawing.Point(6, 41);
-            this.OrdersSearchList.Name = "OrdersSearchList";
-            this.OrdersSearchList.Size = new System.Drawing.Size(229, 135);
-            this.OrdersSearchList.TabIndex = 6;
-            this.OrdersSearchList.UseCompatibleStateImageBehavior = false;
-            this.OrdersSearchList.View = System.Windows.Forms.View.Details;
-            // 
-            // columnHeader10
-            // 
-            this.columnHeader10.Text = "Name";
-            this.columnHeader10.Width = 225;
-            // 
-            // columnHeader11
-            // 
-            this.columnHeader11.Text = "ID";
-            this.columnHeader11.Width = 0;
-            // 
-            // OrdersUnits
-            // 
-            this.OrdersUnits.Location = new System.Drawing.Point(278, 15);
-            this.OrdersUnits.Name = "OrdersUnits";
-            this.OrdersUnits.Size = new System.Drawing.Size(83, 20);
-            this.OrdersUnits.TabIndex = 5;
-            this.OrdersUnits.Text = "0";
-            // 
-            // OrdersSearch
-            // 
-            this.OrdersSearch.Location = new System.Drawing.Point(80, 15);
-            this.OrdersSearch.Name = "OrdersSearch";
-            this.OrdersSearch.Size = new System.Drawing.Size(155, 20);
-            this.OrdersSearch.TabIndex = 7;
-            this.OrdersSearch.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(238, 18);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(34, 13);
-            this.label20.TabIndex = 9;
-            this.label20.Text = "Units:";
-            // 
-            // label21
-            // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(10, 18);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(64, 13);
-            this.label21.TabIndex = 8;
-            this.label21.Text = "Search Item";
-            // 
-            // groupBox5
-            // 
-            this.groupBox5.Controls.Add(this.radioButton1);
-            this.groupBox5.Controls.Add(this.radioButton3);
-            this.groupBox5.Location = new System.Drawing.Point(7, 6);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(203, 44);
-            this.groupBox5.TabIndex = 16;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "Corp or personal Order";
-            // 
-            // radioButton1
-            // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(101, 15);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(76, 17);
-            this.radioButton1.TabIndex = 2;
-            this.radioButton1.Text = "Corp Order";
-            this.radioButton1.UseVisualStyleBackColor = true;
-            // 
-            // radioButton3
-            // 
-            this.radioButton3.AutoSize = true;
-            this.radioButton3.Checked = true;
-            this.radioButton3.Location = new System.Drawing.Point(6, 15);
-            this.radioButton3.Name = "radioButton3";
-            this.radioButton3.Size = new System.Drawing.Size(95, 17);
-            this.radioButton3.TabIndex = 0;
-            this.radioButton3.TabStop = true;
-            this.radioButton3.Text = "Personal Order";
-            this.radioButton3.UseVisualStyleBackColor = true;
+            this.cbxCorpOrder.AutoSize = true;
+            this.cbxCorpOrder.Location = new System.Drawing.Point(83, 57);
+            this.cbxCorpOrder.Name = "cbxCorpOrder";
+            this.cbxCorpOrder.Size = new System.Drawing.Size(77, 17);
+            this.cbxCorpOrder.TabIndex = 28;
+            this.cbxCorpOrder.Text = "Corp Order";
+            this.cbxCorpOrder.UseVisualStyleBackColor = true;
             // 
             // QuestorManagerUI
             // 
@@ -1377,12 +1178,6 @@
             this.tabPage5.PerformLayout();
             this.tabPage6.ResumeLayout(false);
             this.tabPage6.PerformLayout();
-            this.tabPage7.ResumeLayout(false);
-            this.groupBox7.ResumeLayout(false);
-            this.groupBox6.ResumeLayout(false);
-            this.groupBox6.PerformLayout();
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1487,26 +1282,8 @@
         private System.Windows.Forms.Button bttnTaskLineCmd;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.TextBox txtCmdLine;
-        private System.Windows.Forms.TabPage tabPage7;
-        private System.Windows.Forms.GroupBox groupBox6;
-        private System.Windows.Forms.ListView OrdersListView;
-        private System.Windows.Forms.ColumnHeader Name1;
-        private System.Windows.Forms.ColumnHeader Quantity;
-        private System.Windows.Forms.ColumnHeader columnHeader13;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.ListView OrdersSearchList;
-        private System.Windows.Forms.ColumnHeader columnHeader10;
-        private System.Windows.Forms.ColumnHeader columnHeader11;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.TextBox OrdersUnits;
-        private System.Windows.Forms.TextBox OrdersSearch;
-        private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.GroupBox groupBox5;
-        private System.Windows.Forms.RadioButton radioButton1;
-        private System.Windows.Forms.RadioButton radioButton3;
-        private System.Windows.Forms.GroupBox groupBox7;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button4;
+        public System.Windows.Forms.CheckBox cbxCorpOrder;
+        public System.Windows.Forms.CheckBox cbxSellOrder;
     }
 }

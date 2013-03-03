@@ -17,6 +17,7 @@
         GetMineralPrice,
         RefineItems,
         WaitingToBack,
-        SaveMineralPrices
+        SaveMineralPrices,
+        SellOrder
     }
 }

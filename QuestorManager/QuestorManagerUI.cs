@@ -1405,7 +1405,7 @@ namespace QuestorManager
             
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void button4_Click(object sender, EventArgs e)
         {
             String content = Clipboard.GetText();
             int count = 0;
@@ -1432,10 +1432,11 @@ namespace QuestorManager
 
                                 if (name.ToLower().Equals(info[0].ToLower()))
                                 {
-                                    ListViewItem listItem = new ListViewItem(item.Name);
+                                    ListViewItem listItem = new ListViewItem("BuyOrder");
+                                    listItem.SubItems.Add(item.Name);
+                                    listItem.Tag = item.Id.ToString();
                                     listItem.SubItems.Add(surplus.ToString());
-                                    listItem.SubItems.Add(item.Id.ToString());
-                                    OrdersListView.Items.Add(listItem);
+                                    LstTask.Items.Add(listItem);
                                     count++;
                                 }
                             }
@@ -1444,45 +1445,6 @@ namespace QuestorManager
                 }
             }
             System.Windows.Forms.MessageBox.Show("Added " + count + " Tasks to your list.");
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            foreach (ListViewItem item in OrdersSearchList.CheckedItems)
-            {
-                ListViewItem listItem = new ListViewItem(item.Text);
-                listItem.SubItems.Add(OrdersUnits.Text);
-                listItem.SubItems.Add(item.SubItems[1].Text);
-                OrdersListView.Items.Add(listItem);
-            }
-        }
-
-        private void textBox3_TextChanged(object sender, EventArgs e)
-        {
-            LstItems.Items.Clear();
-
-            if (OrdersSearch.Text.Length > 4)
-            {
-                string[] search = OrdersSearch.Text.Split(' ');
-                foreach (ListItems item in List)
-                {
-                    string name = item.Name;
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        continue;
-                    }
-
-                    bool found = search.All(t => name.IndexOf(t, StringComparison.OrdinalIgnoreCase) > -1);
-                    if (!found)
-                    {
-                        continue;
-                    }
-
-                    ListViewItem listItem1 = new ListViewItem(item.Name);
-                    listItem1.SubItems.Add(Convert.ToString(item.Id));
-                    OrdersSearchList.Items.Add(listItem1);
-                }
-            }
         }
     }
 }

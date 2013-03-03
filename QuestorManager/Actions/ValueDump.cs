@@ -101,7 +101,16 @@ namespace QuestorManager.Actions
                 case ValueDumpState.NextItem:
                     if (Settings.Instance.DebugValuedump) Logging.Log("ValueDump", "case ValueDumpState.NextItem:", Logging.Debug);
                     if (!Market.NextItem("ValueDump")) return;
-                    _States.CurrentValueDumpState = ValueDumpState.StartQuickSell;
+                    if (_form.cbxSellOrder.Checked)
+                        _States.CurrentValueDumpState = ValueDumpState.SellOrder;
+                    else
+                        _States.CurrentValueDumpState = ValueDumpState.StartQuickSell;
+                    break;
+
+                case ValueDumpState.SellOrder:
+                    if (Settings.Instance.DebugValuedump) Logging.Log("ValueDump", "case ValueDumpState.SellOrder:", Logging.Debug);
+                    if (!Market.CreateSellOrder("ValueDump", 90, _form.cbxCorpOrder.Checked)) return;
+                    _States.CurrentValueDumpState = ValueDumpState.NextItem;
                     break;
 
                 case ValueDumpState.StartQuickSell:
