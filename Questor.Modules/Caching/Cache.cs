@@ -2793,10 +2793,14 @@ namespace Questor.Modules.Caching
             //
             // Get the closest primary weapon priority target
             //
-
-            EntityCache primaryWeaponPriorityTarget = _primaryWeaponPriorityTargets.OrderBy(pt => pt.PrimaryWeaponPriority)
-                                                   .ThenBy(pt => pt.Entity.Distance)
-                                                   .Select(pt => pt.Entity).FirstOrDefault();
+            EntityCache primaryWeaponPriorityTarget = null;
+            try
+            {
+                primaryWeaponPriorityTarget = _primaryWeaponPriorityTargets.OrderBy(pt => pt.PrimaryWeaponPriority)
+                                                       .ThenBy(pt => pt.Entity.Distance)
+                                                       .Select(pt => pt.Entity).FirstOrDefault();
+            }
+            catch (NullReferenceException) { }  // Not sure why this happens, but seems to be no problem
                 
             if (primaryWeaponPriorityTarget != null && callingroutine == "Combat" && !Cache.Instance.IgnoreTargets.Contains(primaryWeaponPriorityTarget.Name.Trim()))
             {
