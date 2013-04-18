@@ -143,15 +143,7 @@ namespace Questor.Modules.BackgroundTasks
                                     return;
                                 }
                             }
-
-                            target.Orbit(Cache.Instance.OrbitDistance);
-                            Logging.Log(module, "Initiating Orbit [" + target.Name + "][at " + Math.Round((double)Cache.Instance.OrbitDistance / 1000, 0) + "k][ID: " + Cache.Instance.MaskedID(target.Id) + "]", Logging.Teal);
-                            return;
                         }
-
-                        target.Orbit(Cache.Instance.OrbitDistance);
-                        Logging.Log(module, "Initiating Orbit [" + target.Name + "][at " + Math.Round((double)Cache.Instance.OrbitDistance / 1000, 0) + "k][ID: " + Cache.Instance.MaskedID(target.Id) + "]", Logging.Teal);
-                        return;
                     }
                 }
                 else
