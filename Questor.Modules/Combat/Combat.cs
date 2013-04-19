@@ -371,6 +371,9 @@ namespace Questor.Modules.Combat
         /// <returns></returns>
         public bool CanActivate(ModuleCache module, EntityCache entity, bool isWeapon)
         {
+            if (isWeapon && !entity.IsTarget)
+                return false;
+
             // We have changed target, allow activation
             if (entity.Id != module.LastTargetId)
                 return true;
