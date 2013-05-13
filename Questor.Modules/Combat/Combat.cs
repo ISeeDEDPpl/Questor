@@ -1013,7 +1013,7 @@ namespace Questor.Modules.Combat
             //
             // Lets deal with our preferred targets next (in other words what Q is actively trying to shoot or engage drones on)
             //
-            if (Cache.Instance.PreferredPrimaryWeaponTarget != null && !Cache.Instance.PreferredPrimaryWeaponTarget.IsTarget)
+            if (Cache.Instance.PreferredPrimaryWeaponTarget != null && !Cache.Instance.PreferredPrimaryWeaponTarget.IsTarget && !Cache.Instance.PreferredPrimaryWeaponTarget.HasExploded)
             {
                 //
                 // unlock a lower priority entity if needed
