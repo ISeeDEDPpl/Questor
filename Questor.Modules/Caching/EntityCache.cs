@@ -372,6 +372,69 @@ namespace Questor.Modules.Caching
             }
         }
 
+        public bool IsLowerPriorityPresent
+        {
+            get
+            {
+                if (_directEntity != null)
+                {
+                    if (Cache.Instance._primaryWeaponPriorityTargets.Any() || Cache.Instance._dronePriorityTargets.Any())
+                    {
+
+                        if (Cache.Instance._primaryWeaponPriorityTargets.Any())
+                        {
+                            if (Cache.Instance._primaryWeaponPriorityTargets.Any(pt => pt.EntityID == _directEntity.Id))
+                            {
+                                PrimaryWeaponPriority _currentPrimaryWeaponPriority = Cache.Instance._primaryWeaponPriorityTargets.Where(t => t.EntityID == _directEntity.Id).Select(pt => pt.PrimaryWeaponPriority).FirstOrDefault();
+
+                                if (!Cache.Instance._primaryWeaponPriorityTargets.All(pt => pt.PrimaryWeaponPriority > _currentPrimaryWeaponPriority && pt.Entity.Distance < Cache.Instance.MaxRange))
+                                {
+                                    return true;
+                                }
+
+                                return false;
+                            }
+
+                            if (Cache.Instance._primaryWeaponPriorityTargets.Any(e => e.Entity.Distance < Cache.Instance.MaxRange))
+                            {
+                                return true;
+                            }
+
+                            return false;
+                        }
+
+                        if (Cache.Instance._dronePriorityTargets.Any())
+                        {
+                            if (Cache.Instance._dronePriorityTargets.Any(pt => pt.EntityID == _directEntity.Id))
+                            {
+                                DronePriority _currentEntityDronePriority = Cache.Instance._dronePriorityTargets.Where(t => t.EntityID == _directEntity.Id).Select(pt => pt.DronePriority).FirstOrDefault();
+
+                                if (!Cache.Instance._dronePriorityTargets.All(pt => pt.DronePriority > _currentEntityDronePriority && pt.Entity.Distance < Settings.Instance.DroneControlRange))
+                                {
+                                    return true;
+                                }
+
+                                return false;
+                            }
+
+                            if (Cache.Instance._dronePriorityTargets.Any(e => e.Entity.Distance < Settings.Instance.DroneControlRange))
+                            {
+                                return true;
+                            }
+
+                            return false;
+                        }
+
+                        return false;
+                    }
+
+                    return false;
+                }
+
+                return false;
+            }
+        }
+
         public bool IsActiveTarget
         {
             get
@@ -402,31 +465,20 @@ namespace Questor.Modules.Caching
                         }
                     }
 
-                    if (Cache.Instance.InMission && Cache.Instance.OptimalRange != 0 || Settings.Instance.OptimalRange != 0)
+                    if (Cache.Instance.OptimalRange != 0 || Settings.Instance.OptimalRange != 0)
                     {
                         double optimal = 0;
                         
-                        if (Cache.Instance.InMission && Cache.Instance.OptimalRange != 0)
+                        if (Cache.Instance.OptimalRange != 0)
                         {
                             optimal = Cache.Instance.OptimalRange;
                         }
-                        else if (Settings.Instance.OptimalRange != 0)
+                        else /*if (Settings.Instance.OptimalRange != 0)*/ //do we really need this condition? we cant even get in here if one of them isnt != 0
                         {
                             optimal = Settings.Instance.OptimalRange;
                         }
-                        
-                        if (!Cache.Instance.DoWeCurrentlyHaveTurretsMounted()) //if we do not have turrets mounted then optimal range is whatever is less weapons range or targeting range.
-                        {
-                            //
-                            // missile boats
-                            //
-                            optimal = Cache.Instance.MaxRange;
-                            if (_directEntity.Distance < optimal)
-                            {
-                                return true;
-                            }
-                        }
-                        else //Lasers, Projectile, and Hybrids
+
+                        if (Cache.Instance.DoWeCurrentlyHaveTurretsMounted()) //Lasers, Projectile, and Hybrids
                         {
                             if (_directEntity.Distance > Settings.Instance.InsideThisRangeIsHardToTrack)
                             {
@@ -434,16 +486,22 @@ namespace Questor.Modules.Caching
                                 {
                                     return true;
                                 }
-                            }    
+                            }
+                        }
+                        else //missile boats - use max range
+                        {
+                            optimal = Cache.Instance.MaxRange;
+                            if (_directEntity.Distance < optimal)
+                            {
+                                return true;
+                            }
                         }
                         
                         return false;
                     }
 
-                    //
-                    // this returns true just because we are not in a mission? this is going to fubar all anomalies and any ratting in belts/gates
-                    //
-                    return true;
+                    // If we cant determine optimal, how can we say that the entity is within it?
+                    return false;
                 }
 
                 return false;
@@ -1423,26 +1481,33 @@ namespace Questor.Modules.Caching
             {
                 if (!_directEntity.IsTarget)
                 {
-                    if (_directEntity.Distance < Cache.Instance.DirectEve.ActiveShip.MaxTargetRange )
+                    if (!_directEntity.HasExploded)
                     {
-                        if (Cache.Instance.Targets.Count() < Cache.Instance.DirectEve.ActiveShip.MaxLockedTargets)
+                        if (_directEntity.Distance < Cache.Instance.DirectEve.ActiveShip.MaxTargetRange)
                         {
-                            if (_directEntity.LockTarget())
+                            if (Cache.Instance.Targets.Count() < Cache.Instance.DirectEve.ActiveShip.MaxLockedTargets)
                             {
-                                Cache.Instance.TargetingIDs[Id] = DateTime.UtcNow;
-                                return true;
-                            }
+                                if (_directEntity.LockTarget())
+                                {
+                                    Cache.Instance.TargetingIDs[Id] = DateTime.UtcNow;
+                                    return true;
+                                }
 
-                            Logging.Log("EntityCache.LockTarget", "[" + module + "] tried to lock [" + Name + "][" + Math.Round(Distance / 1000, 2) + "k][" + Cache.Instance.MaskedID(Id) + "][" + Cache.Instance.Targets.Count() + "] targets already, LockTarget failed (unknown reason)", Logging.White);
+                                Logging.Log("EntityCache.LockTarget", "[" + module + "] tried to lock [" + Name + "][" + Math.Round(Distance / 1000, 2) + "k][" + Cache.Instance.MaskedID(Id) + "][" + Cache.Instance.Targets.Count() + "] targets already, LockTarget failed (unknown reason)", Logging.White);
+                            }
+                            else
+                            {
+                                Logging.Log("EntityCache.LockTarget", "[" + module + "] tried to lock [" + Name + "][" + Math.Round(Distance / 1000, 2) + "k][" + Cache.Instance.MaskedID(Id) + "][" + Cache.Instance.Targets.Count() + "] targets already, we are out of targeting slots!", Logging.White);
+                            }
                         }
                         else
                         {
-                            Logging.Log("EntityCache.LockTarget", "[" + module + "] tried to lock [" + Name + "][" + Math.Round(Distance / 1000, 2) + "k][" + Cache.Instance.MaskedID(Id) + "][" + Cache.Instance.Targets.Count() + "] targets already, we are out of targeting slots!", Logging.White);
+                            Logging.Log("EntityCache.LockTarget", "[" + module + "] tried to lock [" + Name + "][" + Math.Round(Distance / 1000, 2) + "k][" + Cache.Instance.MaskedID(Id) + "][" + Cache.Instance.Targets.Count() + "] targets already, target is out of range!", Logging.White);
                         }
                     }
                     else
                     {
-                        Logging.Log("EntityCache.LockTarget", "[" + module + "] tried to lock [" + Name + "][" + Math.Round(Distance / 1000, 2) + "k][" + Cache.Instance.MaskedID(Id) + "][" + Cache.Instance.Targets.Count() + "] targets already, target is out of range!", Logging.White);
+                        Logging.Log("EntityCache.LockTarget", "[" + module + "] tried to lock [" + Name + "][" + Cache.Instance.Targets.Count() + "] targets already, target is alread dead!", Logging.White);
                     }
                 }
                 else

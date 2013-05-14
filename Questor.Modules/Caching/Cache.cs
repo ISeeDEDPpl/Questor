@@ -2714,6 +2714,8 @@ namespace Questor.Modules.Caching
                 if (Settings.Instance.DebugGetBestTarget) Logging.Log(callingroutine + " Debug: GetBestTarget", "Cant GetBest yet....Too Soon!", Logging.Teal);
                 return false;
             }
+            if (Cache.Instance.PreferredPrimaryWeaponTarget != null && Cache.Instance.PreferredPrimaryWeaponTarget.HasExploded)
+                Cache.Instance.PreferredPrimaryWeaponTarget = null;
 
             NextGetBestCombatTarget = DateTime.UtcNow.AddMilliseconds(800);
 
@@ -2765,6 +2767,7 @@ namespace Questor.Modules.Caching
                             WarpScramblingPriorityTarget = Cache.Instance._primaryWeaponPriorityTargets.Where(pt => pt.Entity.IsTarget 
                                                                                                  && pt.PrimaryWeaponPriority == PrimaryWeaponPriority.WarpScrambler)
                                                                                                 .OrderBy(pt => (pt.Entity.ShieldPct + pt.Entity.ArmorPct + pt.Entity.StructurePct))
+                                                                                                .ThenByDescending(pt => pt.Entity.IsTarget)
                                                                                                 .ThenBy(pt => pt.Entity.Distance)
                                                                                                 .Select(pt => pt.Entity).FirstOrDefault();
                         }
@@ -2813,6 +2816,7 @@ namespace Questor.Modules.Caching
                             JammingPriorityTarget = Cache.Instance._primaryWeaponPriorityTargets.Where(pt => pt.Entity.IsTarget
                                                                                                  && pt.PrimaryWeaponPriority == PrimaryWeaponPriority.Jamming)
                                                                                                 .OrderBy(pt => (pt.Entity.ShieldPct + pt.Entity.ArmorPct + pt.Entity.StructurePct))
+                                                                                                .ThenByDescending(pt => pt.Entity.IsTarget)
                                                                                                 .ThenBy(pt => pt.Entity.Distance)
                                                                                                 .Select(pt => pt.Entity).FirstOrDefault();
                         }
@@ -2861,6 +2865,7 @@ namespace Questor.Modules.Caching
                             TrackingDisruptionPriorityTarget = Cache.Instance._primaryWeaponPriorityTargets.Where(pt => pt.Entity.IsTarget
                                                                                                  && pt.PrimaryWeaponPriority == PrimaryWeaponPriority.TrackingDisrupting)
                                                                                                 .OrderBy(pt => (pt.Entity.ShieldPct + pt.Entity.ArmorPct + pt.Entity.StructurePct))
+                                                                                                .ThenByDescending(pt => pt.Entity.IsTarget)
                                                                                                 .ThenBy(pt => pt.Entity.Distance)
                                                                                                 .Select(pt => pt.Entity).FirstOrDefault();
                         }
@@ -2909,6 +2914,7 @@ namespace Questor.Modules.Caching
                             NeutralizingPriorityTarget = Cache.Instance._primaryWeaponPriorityTargets.Where(pt => pt.Entity.IsTarget
                                                                                                  && pt.PrimaryWeaponPriority == PrimaryWeaponPriority.Neutralizing)
                                                                                                 .OrderBy(pt => (pt.Entity.ShieldPct + pt.Entity.ArmorPct + pt.Entity.StructurePct))
+                                                                                                .ThenByDescending(pt => pt.Entity.IsTarget)
                                                                                                 .ThenBy(pt => pt.Entity.Distance)
                                                                                                 .Select(pt => pt.Entity).FirstOrDefault();
                         }
@@ -2957,6 +2963,7 @@ namespace Questor.Modules.Caching
                             TargetPaintingPriorityTarget = Cache.Instance._primaryWeaponPriorityTargets.Where(pt => pt.Entity.IsTarget
                                                                                                  && pt.PrimaryWeaponPriority == PrimaryWeaponPriority.TargetPainting)
                                                                                                 .OrderBy(pt => (pt.Entity.ShieldPct + pt.Entity.ArmorPct + pt.Entity.StructurePct))
+                                                                                                .ThenByDescending(pt => pt.Entity.IsTarget)
                                                                                                 .ThenBy(pt => pt.Entity.Distance)
                                                                                                 .Select(pt => pt.Entity).FirstOrDefault();
                         }
@@ -3005,6 +3012,7 @@ namespace Questor.Modules.Caching
                             DampeningPriorityTarget = Cache.Instance._primaryWeaponPriorityTargets.Where(pt => pt.Entity.IsTarget
                                                                                                  && pt.PrimaryWeaponPriority == PrimaryWeaponPriority.Dampening)
                                                                                                 .OrderBy(pt => (pt.Entity.ShieldPct + pt.Entity.ArmorPct + pt.Entity.StructurePct))
+                                                                                                .ThenByDescending(pt => pt.Entity.IsTarget)
                                                                                                 .ThenBy(pt => pt.Entity.Distance)
                                                                                                 .Select(pt => pt.Entity).FirstOrDefault();
                         }
@@ -3030,7 +3038,7 @@ namespace Questor.Modules.Caching
                 if (Settings.Instance.AddWebifiersToPrimaryWeaponsPriorityTargetList)
                 {
                     if (Settings.Instance.DebugGetBestTarget) Logging.Log(callingroutine + " Debug: GetBestTarget: currentTarget", "Checking Webbers", Logging.Teal);
-                    // Is our current target a Jamming priority target?
+                    // Is our current target a Webbing priority target?
                     if (PrimaryWeaponPriorityTargets.Any(pt => pt.IsTarget
                                                             && pt.Id == currentTarget.Id
                                                             && pt.IsWebbingMe))
@@ -3053,6 +3061,7 @@ namespace Questor.Modules.Caching
                             WebbingPriorityTarget = Cache.Instance._primaryWeaponPriorityTargets.Where(pt => pt.Entity.IsTarget
                                                                                                  && pt.PrimaryWeaponPriority == PrimaryWeaponPriority.Webbing)
                                                                                                 .OrderBy(pt => (pt.Entity.ShieldPct + pt.Entity.ArmorPct + pt.Entity.StructurePct))
+                                                                                                .ThenByDescending(pt => pt.Entity.IsTarget)
                                                                                                 .ThenBy(pt => pt.Entity.Distance)
                                                                                                 .Select(pt => pt.Entity).FirstOrDefault();
                         }
@@ -3243,6 +3252,7 @@ namespace Questor.Modules.Caching
                  primaryWeaponPriorityTarget = _primaryWeaponPriorityTargets.Where(p => p.Entity.IsTarget && p.Entity.Distance < Cache.Instance.MaxRange)
                                                                             .OrderByDescending(pt => pt.Entity.IsInOptimalRange)
                                                                             .ThenBy(pt => pt.PrimaryWeaponPriority)
+                                                                            .ThenByDescending(pt => pt.Entity.IsTarget)
                                                                             .ThenBy(pt => pt.Entity.Distance)
                                                                             .Select(pt => pt.Entity).FirstOrDefault();
             }
@@ -3297,7 +3307,7 @@ namespace Questor.Modules.Caching
             {
                 lowValueTarget = potentialCombatTargets.Where(t => (t.IsNPCFrigate || t.IsFrigate))
                     .OrderBy(t => t.IsNPCFrigate)
-                    .ThenBy(t => !t.IsTooCloseTooFastTooSmallToHit)
+                    .ThenBy(t => t.IsTooCloseTooFastTooSmallToHit) //this will return false (not to close to fast to small), then true due to .net sort order of bools
                     //.ThenBy(t => t.TargetValue != null ? t.TargetValue.Value : 0)
                     .ThenBy(OrderByLowestHealth())
                     .ThenBy(t => t.Distance)
@@ -3379,7 +3389,7 @@ namespace Questor.Modules.Caching
             return false;
         }
 
-        public bool GetBestDroneTarget(IEnumerable<EntityCache> _potentialTargets, double distance, bool lowValueFirst, string callingroutine)
+        public bool GetBestDroneTarget(double distance, bool lowValueFirst, string callingroutine, IEnumerable<EntityCache> _potentialTargets = null)
         {
             if ((string.Equals(callingroutine, "Drones", StringComparison.OrdinalIgnoreCase)))
             {
@@ -3397,6 +3407,8 @@ namespace Questor.Modules.Caching
 
             EWarEffectsOnMe(); //updates data that is displayed in the Questor GUI (and possibly used elsewhere later)
 
+            if (Cache.Instance.PreferredDroneTarget != null && Cache.Instance.PreferredDroneTarget.HasExploded)
+                Cache.Instance.PreferredDroneTarget = null;
             // Do we have a 'current target' and if so, is it an actual target?
             // If not, clear current target
             if (currentTarget != null && !currentTarget.IsTarget)
@@ -3678,7 +3690,7 @@ namespace Questor.Modules.Caching
                 highValueTarget = potentialCombatTargets.Where(t => t.TargetValue.HasValue && (!t.IsNPCFrigate && !t.IsFrigate))
                     .OrderBy(t => !t.IsNPCFrigate)
                     .ThenBy(t => !t.IsTooCloseTooFastTooSmallToHit)
-                    .ThenBy(t => t.IsInOptimalRange)
+                    .ThenByDescending(t => t.IsInOptimalRange) //.net sorts bools as false then true (wtf?!?! 0/1 is the only reason i can see)
                     //.ThenByDescending(t => t.TargetValue != null ? t.TargetValue.Value : 0)
                     .ThenBy(OrderByLowestHealth())
                     .ThenBy(t => t.Distance)
