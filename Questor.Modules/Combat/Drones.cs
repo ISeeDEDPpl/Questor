@@ -89,7 +89,8 @@ namespace Questor.Modules.Combat
             TargetingCache.CurrentDronesTarget = Cache.Instance.EntityById(_lastTarget);
             
             // Return best possible low value target
-            Cache.Instance.GetBestDroneTarget(Settings.Instance.DroneControlRange, !Cache.Instance.DronesKillHighValueTargets, "Drones", Cache.Instance.potentialCombatTargets.ToList());
+            if (Cache.Instance.UseDrones != null && Cache.Instance.UseDrones)
+                Cache.Instance.GetBestDroneTarget(Settings.Instance.DroneControlRange, !Cache.Instance.DronesKillHighValueTargets, "Drones", Cache.Instance.potentialCombatTargets.ToList());
 
             if (Cache.Instance.PreferredDroneTarget != null && Cache.Instance.PreferredDroneTarget.Distance < Settings.Instance.DroneControlRange)
             {

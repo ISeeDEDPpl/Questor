@@ -1193,7 +1193,7 @@ namespace Questor.Modules.Caching
                 if (Cache.Instance.InSpace)
                 {
                     _potentialCombatTargets = Entities.Where(e => e.CategoryId == (int)CategoryID.Entity
-                                                        && (!e.IsSentry || (e.IsSentry && Settings.Instance.KillSentries))                       
+                                                        && (!e.IsSentry || (e.IsSentry && (Settings.Instance.KillSentries || (Cache.Instance.PreferredPrimaryWeaponTarget != null && e.Id == Cache.Instance.PreferredPrimaryWeaponTarget.Id))))                       
                                                         && (e.IsNpc || e.IsNpcByGroupID)
                                                         //&& !e.IsTarget
                                                         && !e.IsContainer
@@ -3172,20 +3172,12 @@ namespace Questor.Modules.Caching
                  && !Cache.Instance.IgnoreTargets.Contains(currentTarget.Name.Trim()))
                 {
                     if (Settings.Instance.DebugGetBestTarget) Logging.Log(callingroutine + " Debug: GetBestTarget: currentTarget", "Checking Low Health", Logging.Teal);
-                    if (!currentTarget.IsTooCloseTooFastTooSmallToHit
-                      || (string.Equals(callingroutine, "Drones", StringComparison.OrdinalIgnoreCase) 
-                          && (currentTarget.IsFrigate || currentTarget.IsNPCFrigate))
-                      || (string.Equals(callingroutine, "Combat", StringComparison.OrdinalIgnoreCase) 
-                          && (Cache.Instance.UseDrones && (currentTarget.IsNPCBattleship || currentTarget.IsNPCBattlecruiser))))
+                    if (!currentTarget.IsNPCFrigate || (!Cache.Instance.UseDrones && !currentTarget.IsTooCloseTooFastTooSmallToHit))
                     {
                         if (Settings.Instance.DebugGetBestTarget) Logging.Log(callingroutine + " Debug: GetBestTarget", "CurrentTarget [" + currentTarget.Name + "][" + Math.Round(currentTarget.Distance / 1000, 2) + "k][" + Cache.Instance.MaskedID(currentTarget.Id) + " GroupID [" + currentTarget.GroupId + "]] has less than 60% armor, keep killing this target", Logging.Debug);
                         
-                        if (string.Equals(callingroutine, "Combat", StringComparison.OrdinalIgnoreCase))
-                            Cache.Instance.PreferredPrimaryWeaponTarget = currentTarget;
-                        
-                        if (string.Equals(callingroutine, "Drones", StringComparison.OrdinalIgnoreCase))
-                            Cache.Instance.PreferredDroneTarget = currentTarget;
-                        
+                        Cache.Instance.PreferredPrimaryWeaponTarget = currentTarget;
+
                         return true;
                     }
                 }
