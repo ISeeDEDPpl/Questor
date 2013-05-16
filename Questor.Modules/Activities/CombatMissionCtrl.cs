@@ -1276,14 +1276,6 @@ namespace Questor.Modules.Activities
 
             List<string> targetNames = action.GetParameterValues("target");
 
-            int targetedby = Cache.Instance.TargetedBy.Count(t => (!t.IsSentry || (t.IsSentry && Settings.Instance.KillSentries))
-                                                               && !t.IsEntityIShouldLeaveAlone
-                                                               && !t.IsContainer
-                                                               && t.IsNpc
-                                                               && t.CategoryId == (int)CategoryID.Entity
-                                                               && t.GroupId != (int)Group.LargeColidableStructure
-                                                               && !Cache.Instance.IgnoreTargets.Contains(t.Name.Trim()));
-
             // No parameter? Ignore kill action
             if (targetNames.Count == 0)
             {
@@ -1303,7 +1295,7 @@ namespace Questor.Modules.Activities
                 return;
             }
 
-            if (breakOnAttackers && Cache.Instance.TargetedBy.Count(t => !t.IsSentry && t.Distance < Cache.Instance.MaxRange) > 1)
+            if (breakOnAttackers && Cache.Instance.TargetedBy.Count(t => !t.IsSentry) > targets.Count())
             {
                 // We are being attacked, break the kill order
                 if (Cache.Instance.RemovePrimaryWeaponPriorityTargets(targets)) Logging.Log("CombatMissionCtrl." + _pocketActions[_currentAction], "Breaking off kill order, new spawn has arrived!", Logging.Teal);
@@ -1314,25 +1306,20 @@ namespace Questor.Modules.Activities
                     KillTargetEntity.UnlockTarget("CombatMissionCtrl");
                 }
 
-                AddPriorityKillTargetsAndMoveIntoRangeAsNeeded(Cache.Instance.potentialCombatTargets, (double)Distances.OnGridWithMe, targetedby, true);
+                targetNames.ForEach(t => Cache.Instance.IgnoreTargets.Add(t));
+                Cache.Instance.GetBestTarget(99999, false, "combat");
+                Cache.Instance.GetBestDroneTarget(99999, false, "Drones");
                 return;
             }
+            Cache.Instance.IgnoreTargets.RemoveWhere(t => targetNames.Contains(t));
 
             if (notTheClosest) targets = targets.OrderByDescending(t => t.Distance).ToList();
 
-            //
-            // the important bit is here... Adds target to the PrimaryWeapon or Drone Priority Target Lists so that they get killed (we basically wait for combat.cs to do that before proceeding)
-            //
-            if (targets.Any())
-            {
-                AddPriorityKillTargetsAndMoveIntoRangeAsNeeded(targets, (double)Distances.OnGridWithMe, targetedby, true);
-            }
+            // GetTargets
+            Cache.Instance.GetBestTarget((int)Distances.OnGridWithMe, false, "combat");
+            Cache.Instance.GetBestDroneTarget((int)Distances.OnGridWithMe, false, "Drones");
 
-            //
-            // we CANNOT proceed to the next action until the target is actually dead. DO NOT do a Nextaction() here.
-            //
-            //Nextaction();
-
+            // Don't use NextAction here, only if target is killed (checked further up)
             return;
         }
 
@@ -2133,6 +2120,7 @@ namespace Questor.Modules.Activities
                         Logging.Log("CombatMissionCtrl", "We have moved to the next Pocket [" + Math.Round(distance / 1000, 0) + "k away]", Logging.Green);
 
                         // If we moved more then 100km, assume next Pocket
+                        Cache.Instance.ClearEWARCache();
                         Cache.Instance.PocketNumber++;
                         _States.CurrentCombatMissionCtrlState = CombatMissionCtrlState.LoadPocket;
                         Statistics.WritePocketStatistics();

@@ -1015,7 +1015,7 @@ namespace Questor.Modules.Combat
                     return;
                 }
 
-                if (Cache.Instance.PreferredPrimaryWeaponTarget.IsReadyToTarget)
+                if (Cache.Instance.PreferredPrimaryWeaponTarget.IsReadyToTarget && !Cache.Instance.PreferredPrimaryWeaponTarget.IsTargeting)
                 {
                     //
                     // unlock a lower priority entity if needed
@@ -1038,7 +1038,6 @@ namespace Questor.Modules.Combat
                         return;
                     }    
                 }
-                
             }
             #endregion
 
@@ -1055,12 +1054,12 @@ namespace Questor.Modules.Combat
                     return;
                 }
 
-                if (Cache.Instance.PreferredDroneTarget.IsReadyToTarget)
+                if (Cache.Instance.PreferredDroneTarget.IsReadyToTarget && !Cache.Instance.PreferredDroneTarget.IsTargeting)
                 {
                     //
                     // unlock a lower priority entity if needed
                     //
-                    if (Cache.Instance.PreferredDroneTarget.Distance <= Cache.Instance.MaxRange)
+                    if (Cache.Instance.PreferredDroneTarget.Distance <= Settings.Instance.DroneControlRange)
                     {
                         if (!UnlockLowValueTarget("Combat.TargetCombatants", "PreferredDroneTarget")) return;
                     }

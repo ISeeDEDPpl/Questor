@@ -710,8 +710,19 @@ namespace Questor.Modules.Caching
             get
             {
                 if (_directEntity != null)
-                    return _directEntity.Attacks.Contains("effects.WarpScramble");
-
+                {
+                    if (_directEntity.Attacks.Contains("effects.WarpScramble"))
+                    {
+                        if (!Cache.Instance.WarpScrambler.Contains(_directEntity.Id)) Cache.Instance.WarpScrambler.Add(_directEntity.Id);
+                        return true;
+                    }
+                    else
+                    {
+                        if (Cache.Instance.WarpScrambler.Contains(_directEntity.Id))
+                            return true;
+                        return false;
+                    }
+                }
                 return false;
             }
         }
@@ -721,8 +732,19 @@ namespace Questor.Modules.Caching
             get
             {
                 if (_directEntity != null)
-                    return _directEntity.Attacks.Contains("effects.ModifyTargetSpeed");
-
+                {
+                    if (_directEntity.Attacks.Contains("effects.ModifyTargetSpeed"))
+                    {
+                        if (!Cache.Instance.Webbing.Contains(_directEntity.Id)) Cache.Instance.Webbing.Add(_directEntity.Id);
+                        return true;
+                    }
+                    else
+                    {
+                        if (Cache.Instance.Webbing.Contains(_directEntity.Id))
+                            return true;
+                        return false;
+                    }
+                }
                 return false;
             }
         }
@@ -732,8 +754,19 @@ namespace Questor.Modules.Caching
             get
             {
                 if (_directEntity != null)
-                    return _directEntity.ElectronicWarfare.Contains("ewEnergyNeut");
-
+                {
+                    if (_directEntity.ElectronicWarfare.Contains("ewEnergyNeut"))
+                    {
+                        if (!Cache.Instance.Neuting.Contains(_directEntity.Id)) Cache.Instance.Neuting.Add(_directEntity.Id);
+                        return true;
+                    }
+                    else
+                    {
+                        if (Cache.Instance.Neuting.Contains(_directEntity.Id))
+                            return true;
+                        return false;
+                    }
+                }
                 return false;
             }
         }
@@ -743,8 +776,19 @@ namespace Questor.Modules.Caching
             get
             {
                 if (_directEntity != null)
-                    return _directEntity.ElectronicWarfare.Contains("electronic");
-
+                {
+                    if (_directEntity.ElectronicWarfare.Contains("electronic"))
+                    {
+                        if (!Cache.Instance.Jammer.Contains(_directEntity.Id)) Cache.Instance.Jammer.Add(_directEntity.Id);
+                        return true;
+                    }
+                    else
+                    {
+                        if (Cache.Instance.Jammer.Contains(_directEntity.Id))
+                            return true;
+                        return false;
+                    }
+                }
                 return false;
             }
         }
@@ -754,8 +798,19 @@ namespace Questor.Modules.Caching
             get
             {
                 if (_directEntity != null)
-                    return _directEntity.ElectronicWarfare.Contains("ewRemoteSensorDamp");
-
+                {
+                    if (_directEntity.ElectronicWarfare.Contains("ewRemoteSensorDamp"))
+                    {
+                        if (!Cache.Instance.Dampening.Contains(_directEntity.Id)) Cache.Instance.Dampening.Add(_directEntity.Id);
+                        return true;
+                    }
+                    else
+                    {
+                        if (Cache.Instance.Dampening.Contains(_directEntity.Id))
+                            return true;
+                        return false;
+                    }
+                }
                 return false;
             }
         }
@@ -765,8 +820,19 @@ namespace Questor.Modules.Caching
             get
             {
                 if (_directEntity != null)
-                    return _directEntity.ElectronicWarfare.Contains("ewTargetPaint");
-
+                {
+                    if (_directEntity.ElectronicWarfare.Contains("ewTargetPaint"))
+                    {
+                        if (!Cache.Instance.TargetPainting.Contains(_directEntity.Id)) Cache.Instance.TargetPainting.Add(_directEntity.Id);
+                        return true;
+                    }
+                    else
+                    {
+                        if (Cache.Instance.TargetPainting.Contains(_directEntity.Id))
+                            return true;
+                        return false;
+                    }
+                }
                 return false;
             }
         }
@@ -776,8 +842,19 @@ namespace Questor.Modules.Caching
             get
             {
                 if (_directEntity != null)
-                    return _directEntity.ElectronicWarfare.Contains("ewTrackingDisrupt");
-
+                {
+                    if (_directEntity.ElectronicWarfare.Contains("ewTrackingDisrupt"))
+                    {
+                        if (!Cache.Instance.TrackingDisrupter.Contains(_directEntity.Id)) Cache.Instance.TrackingDisrupter.Add(_directEntity.Id);
+                        return true;
+                    }
+                    else
+                    {
+                        if (Cache.Instance.TrackingDisrupter.Contains(_directEntity.Id))
+                            return true;
+                        return false;
+                    }
+                }
                 return false;
             }
         }
