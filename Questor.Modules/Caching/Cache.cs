@@ -2448,7 +2448,7 @@ namespace Questor.Modules.Caching
                 // Find the first waypoint
                 if (DirectEve.Navigation.GetDestinationPath() != null && DirectEve.Navigation.GetDestinationPath().Count > 0)
                 {
-                    List<long> currentPath = DirectEve.Navigation.GetDestinationPath();
+                    List<int> currentPath = DirectEve.Navigation.GetDestinationPath();
                     if (currentPath == null || !currentPath.Any()) return false;
                     if (currentPath[0] == 0) return false; //No destination set - prevents exception if somehow we have got an invalid destination
 

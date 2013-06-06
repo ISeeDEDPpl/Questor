@@ -1344,7 +1344,7 @@ namespace Questor.Modules.Caching
             if (_directEntity != null && DateTime.UtcNow > Cache.Instance.NextApproachAction)
             {
                 Cache.Instance.NextApproachAction = DateTime.UtcNow.AddSeconds(Time.Instance.ApproachDelay_seconds);
-                _directEntity.Approach(range);
+                _directEntity.KeepAtRange(range);
             }
         }
 
