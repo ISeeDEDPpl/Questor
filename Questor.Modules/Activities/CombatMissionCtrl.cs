@@ -1128,12 +1128,16 @@ namespace Questor.Modules.Activities
                 return;
             }
 
-            if (breakOnAttackers && Cache.Instance.TargetedBy.Count(t => !t.IsSentry && t.Distance < Cache.Instance.MaxRange) > 1)
+            IEnumerable<EntityCache> killTargets = Cache.Instance.Entities.Where(e => targetNames.Contains(e.Name)).OrderBy(t => t.Distance);
+
+            //if (breakOnAttackers && Cache.Instance.TargetedBy.Count(t => !t.IsSentry && t.Distance < Cache.Instance.MaxRange) > 1)
+            if (breakOnAttackers && Cache.Instance.TargetedBy.Count(t => (!t.IsSentry || Settings.Instance.KillSentries) && !Cache.Instance.IgnoreTargets.Contains(t.Name)) > killTargets.Count(e => e.IsTargetedBy))
             {
                 // We are being attacked, break the kill order
                 if (Cache.Instance.RemovePrimaryWeaponPriorityTargets(targets)) Logging.Log("CombatMissionCtrl." + _pocketActions[_currentAction], "Breaking off kill order, new spawn has arrived!", Logging.Teal);
 
-                foreach (EntityCache entity in Cache.Instance.Targets.Where(e => e.IsTarget || e.IsTargeting))
+                //foreach (EntityCache entity in Cache.Instance.Targets.Where(e => e.IsTarget || e.IsTargeting))
+                foreach (EntityCache entity in Cache.Instance.Targets.Where(e => targetNames.Contains(e.Name) && (e.IsTarget || e.IsTargeting)))
                 {
                     Logging.Log("CombatMissionCtrl." + _pocketActions[_currentAction], "Unlocking [" + entity.Name + "][ID: " + Cache.Instance.MaskedID(entity.Id) + "][" + Math.Round(entity.Distance / 1000, 0) + "k away] due to kill order being put on hold", Logging.Teal);
                     entity.UnlockTarget("CombatMissionCtrl");

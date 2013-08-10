@@ -2854,14 +2854,14 @@ namespace Questor.Modules.Caching
             }
 
             // Get the closest high value target
-            EntityCache highValueTarget = potentialCombatTargets.Where(t => t.TargetValue.HasValue 
-                                                          && t.Distance < distance 
-                                                          && t.IsTarget).OrderBy(t => !t.IsNPCFrigate).ThenBy(t => t.IsInOptimalRange).ThenByDescending(t => t.TargetValue != null ? t.TargetValue.Value : 0).ThenBy(OrderByLowestHealth()).ThenBy(t => t.Distance).FirstOrDefault();
+            EntityCache highValueTarget = potentialCombatTargets.Where(t => //t.TargetValue.HasValue This will always have a value so whats the point in checking it
+                                                           t.Distance < distance 
+                                                          && t.IsTarget).OrderByDescending(t => t.IsInOptimalRange).ThenByDescending(t => t.TargetValue != null ? t.TargetValue.Value : 0).ThenBy(OrderByLowestHealth()).ThenBy(t => t.Distance).FirstOrDefault();
 
             // Get the closest low value target
-            EntityCache lowValueTarget = potentialCombatTargets.Where(t => !t.TargetValue.HasValue 
-                                                          && t.Distance < distance 
-                                                          && t.IsTarget).OrderBy(t => t.IsNPCFrigate).ThenBy(OrderByLowestHealth()).ThenBy(t => t.Distance).FirstOrDefault();
+            EntityCache lowValueTarget = potentialCombatTargets.Where(t =>
+                                                          t.Distance < distance 
+                                                          && t.IsTarget).OrderBy(t => t.TargetValue != null ? t.TargetValue.Value : 0).ThenBy(OrderByLowestHealth()).ThenBy(t => t.Distance).FirstOrDefault();
 
             if (lowValueFirst && lowValueTarget != null)
             {

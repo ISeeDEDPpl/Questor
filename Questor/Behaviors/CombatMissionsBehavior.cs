@@ -813,7 +813,7 @@ namespace Questor.Behaviors
                             {
                                 if (!Cache.Instance.OpenDroneBay("Statistics: WriteDroneStatsLog")) return;
                                 InvType drone = Cache.Instance.InvTypesById[Settings.Instance.DroneTypeId];
-                                Statistics.Instance.LostDrones = (int)Math.Floor((Cache.Instance.DroneBay.Capacity - Cache.Instance.DroneBay.UsedCapacity) / drone.Volume);
+// This was causing a lockup       Statistics.Instance.LostDrones = (int)Math.Floor((Cache.Instance.DroneBay.Capacity - Cache.Instance.DroneBay.UsedCapacity) / drone.Volume);
                                 //Logging.Log("CombatMissionsBehavior: Starting: Statistics.WriteDroneStatsLog");
                                 if (!Statistics.WriteDroneStatsLog()) break;
                             }

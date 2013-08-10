@@ -144,63 +144,6 @@ namespace Questor
             }
 
 
-            #region Load ISXStealth
-            //
-            // IsxStealth
-            //
-            try
-            {
-                //
-                // load IsxStealth Here
-                //
-                bool SafetyScriptRan = false;
-                if (File.Exists(Path.Combine(InnerSpaceAPI.InnerSpace.Path, "scripts/StartingQuestorSafetyScript.iss")))
-                {
-                    //
-                    // note that "StartingQuestorSafetyScript.iss" is hard coded because we cant (dont?) load the settings xml this early in the process.
-                    //
-                    LavishScript.ExecuteCommand("Echo [${Time}] Loading [" + "StartingQuestorSafetyScript.iss" + "]");
-                    LavishScript.ExecuteCommand("runscript " + "StartingQuestorSafetyScript.iss");
-                    LavishScript.ExecuteCommand("Echo [${Time}] Done Loading [" + "StartingQuestorSafetyScript.iss" + "] Did it work?");
-
-                    SafetyScriptRan = true;
-                    // continue while script runs. note: (we do NOT check to verify that it loaded!)
-                    while (Cache.Instance.DirectEve == null && DateTime.UtcNow < AppStarted.AddSeconds(2)) //wait a few seconds
-                    {
-                        System.Threading.Thread.Sleep(50); //this runs while we wait for ISXStealth to run (we do NOT check to verify that it loaded!) Is this pause even necessary?
-                    }
-                }
-                else
-                {
-                    Logging.Log("Startup", "StartingQuestorSafetyScript - unable to find [" + "StartingQuestorSafetyScript.iss" + "]", Logging.White);
-                }
-
-                Logging.Log("Startup", "StartingQuestorSafetyScript - 3", Logging.White);
-
-                if (!SafetyScriptRan)
-                {
-                    Logging.Log("Startup", "SafetyScriptRan is [" + SafetyScriptRan.ToString() + "], halting", Logging.Debug);
-                    while (Cache.Instance.DirectEve == null)
-                    {
-                        System.Threading.Thread.Sleep(50); //this pauses forever...
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logging.Log("Startup", "Error on Loading IsxStealth", Logging.Orange);
-                Logging.Log("Startup", string.Format("IsxStealth: Exception {0}...", ex), Logging.White);
-                Cache.Instance.CloseQuestorCMDLogoff = false;
-                Cache.Instance.CloseQuestorCMDExitGame = true;
-                Cache.Instance.CloseQuestorEndProcess = true;
-                Settings.Instance.AutoStart = true;
-                Cache.Instance.ReasonToStopQuestor = "Error on Loading IsxStealth";
-                Cache.Instance.SessionState = "Quitting";
-                Cleanup.CloseQuestor();
-            }
-
-            #endregion Load IsxStealth
-
             #region Load DirectEVE
             //
             // Load DirectEVE
