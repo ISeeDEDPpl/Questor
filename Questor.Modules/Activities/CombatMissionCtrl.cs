@@ -1261,6 +1261,7 @@ namespace Questor.Modules.Activities
                 if (killTargets.Any())
                 {
                     Cache.Instance.RemovePrimaryWeaponPriorityTargets(killTargets.Where(i => i.Name == Cache.Instance.PreferredPrimaryWeaponTarget.Name));
+                    if(Settings.Instance.UseDrones)
                     Cache.Instance.RemoveDronePriorityTargets(killTargets.Where(i => i.Name == Cache.Instance.PreferredPrimaryWeaponTarget.Name));
 
                     if (Cache.Instance.PreferredPrimaryWeaponTargetID != null)
