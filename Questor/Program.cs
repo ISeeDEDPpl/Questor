@@ -1,4 +1,4 @@
-﻿using SlimDX.Direct3D10;
+﻿
 
 namespace Questor
 {

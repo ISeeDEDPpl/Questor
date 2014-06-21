@@ -17,10 +17,6 @@ namespace D3DDetour
                     Hook = new D3D9();
                     break;
 #if FALSE
-                case D3DVersion.Direct3D10:
-                case D3DVersion.Direct3D10_1:
-                    Hook = new D3D10();
-                    break;
                 case D3DVersion.Direct3D11:
                     Hook = new D3D11();
                     break;

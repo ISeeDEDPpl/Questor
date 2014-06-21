@@ -31,11 +31,18 @@
     <CodeAnalysisLogFile>$(ProjectDir)..\bin\$(Configuration)\$(TargetName).$(TargetExt).CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisRuleSetDirectories>$(CodeAnalysisStaticAnalysisDirectory)Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>$(CodeAnalysisPath)Rules</CodeAnalysisRuleDirectories>
+    <NoWin32Manifest>False</NoWin32Manifest>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
+    <DebugType>Full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
@@ -59,9 +66,6 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DirectEve, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -70,9 +74,6 @@
     <Reference Include="Lavish.InnerSpace, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9029a3ab4cbe108d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(ProgramFiles)\InnerSpace\Lavish.InnerSpace.dll</HintPath>
-    </Reference>
-    <Reference Include="SlimDX">
-      <HintPath>..\DirectEve\SlimDX.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -93,7 +94,6 @@
     <Compile Include="Behaviors\DebugHangarsBehavior.cs" />
     <Compile Include="Behaviors\DedicatedBookmarkSalvagerBehavior.cs" />
     <Compile Include="Behaviors\MiningBehavior.cs" />
-    <Compile Include="D3DDetour\D3D10.cs" />
     <Compile Include="D3DDetour\D3D11.cs" />
     <Compile Include="D3DDetour\D3D9.cs" />
     <Compile Include="D3DDetour\D3DHook.cs" />
@@ -170,6 +170,16 @@
     <PostBuildEvent>if exist "$(TargetDir)$(ProjectName).exe" copy /Y "$(TargetDir)$(ProjectName).exe" "$(ProjectDir)..\output\$(ProjectName).exe"
 if exist "$(TargetDir)$(ProjectName).dll" copy /Y "$(TargetDir)$(ProjectName).dll" "$(ProjectDir)..\output\$(ProjectName).dll"
 if exist "$(TargetDir)$(ProjectName).pdb" copy /Y "$(TargetDir)$(ProjectName).pdb" "$(ProjectDir)..\output\$(ProjectName).pdb"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+    <BaseAddress>4194304</BaseAddress>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

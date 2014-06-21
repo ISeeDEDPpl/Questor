@@ -1,76 +1,121 @@
-﻿//using System;
-//using System.Runtime.InteropServices;
-//using SlimDX;
-//using SlimDX.Direct3D11;
-//using SlimDX.DXGI;
-//using SlimDX.Windows;
-//using WhiteMagic.Internals;
-//using Device = SlimDX.Direct3D11.Device;
-//
-//namespace D3DDetour
-//{
-//	public class D3D11 : D3DHook
-//	{
-//		private Direct3D11Present _presentDelegate;
-//		private Detour _presentHook;
-//		//private Detour _endSceneHook;
-//
-//		const int VMT_PRESENT = 8;
-//		const int VMT_RESIZETARGET = 14;
-//
-//		public IntPtr PresentPointer = IntPtr.Zero;
-//		public IntPtr ResetTargetPointer = IntPtr.Zero;
-//
-//		public override void Initialize()
-//		{
-//			Device tmpDevice;
-//			SwapChain sc;
-//			using (var rf = new RenderForm())
-//			{
-//				var desc = new SwapChainDescription
-//				{
-//				855555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555	BufferCount = 1,
-//					Flags = SwapChainFlags.None,
-//					IsWindowed = true,
-//					ModeDescription = new ModeDescription(100, 100, new Rational(60, 1), SlimDX.DXGI.Format.R8G8B8A8_UNorm),
-//					OutputHandle = rf.Handle,
-//					SampleDescription = new SampleDescription(1, 0),
-//					SwapEffect = SwapEffect.Discard,
-//					Usage = Usage.RenderTargetOutput
-//				};
-//
-//				var res = Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None, desc, out tmpDevice, out sc);
-//				if (res.IsSuccess)
-//				{
-//					using (tmpDevice)
-//					{
-//						using (sc)
-//						{
-//							PresentPointer = Pulse.Magic.GetObjectVtableFunction(sc.ComPointer, VMT_PRESENT);
-//							ResetTargetPointer = Pulse.Magic.GetObjectVtableFunction(sc.ComPointer, VMT_RESIZETARGET);
-//						}
-//					}
-//				}
-//			}
-//
-//			_presentDelegate = Pulse.Magic.RegisterDelegate<Direct3D11Present>(PresentPointer);
-//			_presentHook = Pulse.Magic.Detours.CreateAndApply(_presentDelegate, new Direct3D11Present(Callback), "D11Present");
-//		}
-//
-//		private int Callback(IntPtr swapChainPtr, int syncInterval, PresentFlags flags)
-//		{
-//			RaiseEvent();
-//			return (int)_presentHook.CallOriginal(swapChainPtr, syncInterval, flags);
-//		}
-//
-//		public override void Remove()
-//		{
-//			_presentHook.Remove();
-//		}
-//		[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-//		private delegate int Direct3D11Present(IntPtr swapChainPtr, int syncInterval, PresentFlags flags);
-//
-//		[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-//		private delegate int Direct3D11ResizeTarget(IntPtr swapChainPtr, ref DXGI_MODE_DESC newTargetParameters);
-//	}
-//}
+﻿using System;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+using EasyHook;
+
+
+namespace D3DDetour
+{
+public class D3D11 : D3DHook
+	{
+		public struct SwapChainDescription
+		{
+			public D3D11.ModeDescription ModeDescription;
+			public D3D11.SampleDescription SampleDescription;
+			public int Usage;
+			public int BufferCount;
+			public IntPtr OutputHandle;
+			[MarshalAs(UnmanagedType.Bool)]
+			public bool IsWindowed;
+			public int SwapEffect;
+			public int Flags;
+		}
+		public struct Rational
+		{
+			public int Numerator;
+			public int Denominator;
+		}
+		public struct ModeDescription
+		{
+			public int Width;
+			public int Height;
+			public D3D11.Rational RefreshRate;
+			public int Format;
+			public int ScanlineOrdering;
+			public int Scaling;
+		}
+		public struct SampleDescription
+		{
+			public int Count;
+			public int Quality;
+		}
+		private delegate void Delegate0(IntPtr intptr_0);
+		private delegate int Delegate1(int int_0, int int_1, int int_2);
+		private D3D11.Delegate1 delegate1_0;
+		private LocalHook localHook_0;
+		public IntPtr EndScenePointer = IntPtr.Zero;
+		public IntPtr ResetPointer = IntPtr.Zero;
+		public IntPtr ResetExPointer = IntPtr.Zero;
+		private IntPtr intptr_0;
+		private IntPtr intptr_1;
+		private IntPtr intptr_2;
+		public unsafe override void Initialize()
+		{
+			Form form = new Form();
+			D3D11.SwapChainDescription swapChainDescription = new D3D11.SwapChainDescription
+			{
+				BufferCount = 1,
+				ModeDescription = new D3D11.ModeDescription
+				{
+					Format = 28
+				},
+				Usage = 32,
+				OutputHandle = form.Handle,
+				SampleDescription = new D3D11.SampleDescription
+				{
+					Count = 1
+				},
+				IsWindowed = true
+			};
+			IntPtr zero = IntPtr.Zero;
+			IntPtr zero2 = IntPtr.Zero;
+			IntPtr zero3 = IntPtr.Zero;
+		D3D11CreateDeviceAndSwapChain((void*)IntPtr.Zero, 1, (void*)IntPtr.Zero, 0, (void*)IntPtr.Zero, 0, 7, (void*)(&swapChainDescription), (void*)(&zero), (void*)(&zero2), (void*)IntPtr.Zero, (void*)(&zero3));
+			this.intptr_0 = zero;
+			this.intptr_1 = zero2;
+			this.intptr_2 = zero3;
+			IntPtr intPtr = Marshal.ReadIntPtr(Marshal.ReadIntPtr(this.intptr_0), 32);
+			D3D11.Delegate0 @delegate = (D3D11.Delegate0)Marshal.GetDelegateForFunctionPointer(Marshal.ReadIntPtr(Marshal.ReadIntPtr(this.intptr_0), 8), typeof(D3D11.Delegate0));
+			D3D11.Delegate0 delegate2 = (D3D11.Delegate0)Marshal.GetDelegateForFunctionPointer(Marshal.ReadIntPtr(Marshal.ReadIntPtr(this.intptr_1), 8), typeof(D3D11.Delegate0));
+			D3D11.Delegate0 delegate3 = (D3D11.Delegate0)Marshal.GetDelegateForFunctionPointer(Marshal.ReadIntPtr(Marshal.ReadIntPtr(this.intptr_2), 8), typeof(D3D11.Delegate0));
+			@delegate(this.intptr_0);
+			delegate2(this.intptr_1);
+			delegate3(this.intptr_2);
+			this.delegate1_0 = (D3D11.Delegate1)Marshal.GetDelegateForFunctionPointer(intPtr, typeof(D3D11.Delegate1));
+			this.localHook_0 = LocalHook.Create(intPtr, new D3D11.Delegate1(this.method_0), this);
+			
+			int[] exclusiveACL = new int[1];
+			localHook_0.ThreadACL.SetExclusiveACL(exclusiveACL);
+		}
+		private int method_0(int int_0, int int_1, int int_2)
+		{
+			base.RaiseEvent();
+			return this.delegate1_0(int_0, int_1, int_2);
+		}
+		public override void Remove()
+		{
+			this.localHook_0.Dispose();
+		}
+		[DllImport("d3d11.dll")]
+		static extern unsafe int D3D11CreateDeviceAndSwapChain(void* pVoid_0, int int_0, void* pVoid_1, int int_1, void* pVoid_2, int int_2, int int_3, void* pVoid_3, void* pVoid_4, void* pVoid_5, void* pVoid_6, void* pVoid_7);
+		[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+		public static extern IntPtr GetModuleHandle(string lpModuleName);
+		[DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+		public static extern IntPtr LoadLibraryA(IntPtr lpModuleName);
+		public static void LoadLibrary(string libraryName)
+		{
+			if (D3D11.GetModuleHandle(libraryName) == IntPtr.Zero)
+			{
+				IntPtr intPtr = Marshal.StringToHGlobalAnsi(libraryName);
+				try
+				{
+					D3D11.LoadLibraryA(intPtr);
+				}
+				finally
+				{
+					Marshal.FreeHGlobal(intPtr);
+				}
+			}
+		}
+	}
+}
