@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using SlimDX;
-using SlimDX.DXGI;
+
 
 namespace D3DDetour
 {
@@ -35,19 +34,7 @@ namespace D3DDetour
 	public enum D3DVersion
 	{
 		Direct3D9,
-		Direct3D10,
-		Direct3D10_1,
 		Direct3D11,
 	}
 
-	[StructLayout(LayoutKind.Sequential)]
-	public struct DXGI_MODE_DESC
-	{
-		public int Width;
-		public int Height;
-		public Rational RefreshRate;
-		public Format Format;
-		public DisplayModeScanlineOrdering ScanlineOrdering;
-		public DisplayModeScaling Scaling;
-	}
 }
