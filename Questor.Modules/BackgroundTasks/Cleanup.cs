@@ -627,13 +627,6 @@ namespace Questor.Modules.BackgroundTasks
                                 //
                                 sayOk |= window.Html.Contains("Are you sure you want to accept this offer?");
                                 
-                                if (_States.CurrentArmState == ArmState.RepairShop || _States.CurrentPanicState == PanicState.Panic)
-                                {
-                                    sayOk |= window.Type.Contains("form.HybridWindow") && window.Caption.Contains("Set Quantity"); 
-                                    sayOk |= window.Html.Contains("Repairing these items will cost");
-                                    sayOk |= window.Html.Contains("How much would you like to repair? Full repair cost is");
-                                }
-
                                 sayOk |= window.Html.Contains("You do not have an outstanding invitation to this fleet.");
                                 sayOk |= window.Html.Contains("You have already selected a character for this session.");
                                 sayOk |= window.Html.Contains("If you decline or fail a mission from an agent");
@@ -649,6 +642,12 @@ namespace Questor.Modules.BackgroundTasks
                                 //
                                 //sayno |= window.Html.Contains("Do you wish to proceed with this dangerous action
                             }
+
+                            // Unfortunately, it now seems that the html content of payment confirmation windows during drone repair is empty, 
+                            // therefore the following check is necessary to press Ok in that window
+                            if (_States.CurrentArmState == ArmState.RepairShop || _States.CurrentPanicState == PanicState.Panic)
+                                sayOk |= window.Type.Contains("form.HybridWindow") && window.Caption.Contains("Set Quantity");
+
 
                             if (restartHarsh)
                             {
