@@ -690,6 +690,9 @@ namespace Questor.Modules.Actions
             {
                 if (!OpenAgentWindow(module)) return;
 
+                if (DateTime.UtcNow < _lastAgentAction.AddMilliseconds(Cache.Instance.RandomNumber(2000, 4000)))
+                    return;
+
                 List<DirectAgentResponse> responses = Agent.Window.AgentResponses;
                 if (responses == null || responses.Count == 0)
                 {
